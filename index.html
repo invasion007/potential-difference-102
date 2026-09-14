@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.2 电势差 · 可交互课件</title>
+<style>
+  :root{
+    /* 配色基准：原版 Manim（3Blue1Brown）—— 纯黑底 + 白线为主 + Manim 官方色常量
+       红=φ>0 那一半面 蓝=φ<0 那一半面 黄=电势差 U（本课主角量） 金=W 柱；一屏彩色 ≤3 个色族 */
+    --bg:#000000; --bg2:#0a0a0a; --panel:#0e0e0e; --line:#242424; --line2:#383838;
+    --ink:#FFFFFF; --ink2:#B0B0B0; --muted:#888888;
+    --pos:#FC6255; --neg:#58C4DD;
+    --yellow:#FFFF00;   /* 结论色 Manim YELLOW：电势差 U */
+    --gold:#F0AC5F;     /* 次强调 Manim GOLD：W 柱 */
+    --green:#83C167;
+    --phi:#9A72AC;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC","WenQuanYi Zen Hei",sans-serif;
+    overflow:hidden;
+  }
+  .app{display:grid; grid-template-rows:auto auto 1fr auto auto; height:100vh;}
+
+  /* ---------- 顶部 ---------- */
+  header{display:flex; align-items:baseline; gap:14px; padding:10px 18px 8px; flex-wrap:wrap; row-gap:3px;
+    background:var(--bg2); border-bottom:1px solid var(--line);}
+  header h1{font-size:16px; margin:0; font-weight:600; letter-spacing:.5px; white-space:nowrap;}
+  .act{font-size:13px; color:var(--yellow); border:1px solid var(--line2); border-radius:10px;
+    padding:1px 9px; white-space:nowrap;}
+  .steptitle{font-size:15px; color:var(--ink); font-weight:600;}
+  .stepsn{margin-left:auto; font-size:13px; color:var(--ink2); font-variant-numeric:tabular-nums;}
+
+  /* ---------- 主体 ---------- */
+  .stage{display:grid; grid-template-columns:1fr 272px; min-height:0;}
+
+  /* ---------- 顶部步骤导航条 ---------- */
+  .topnav{display:flex; align-items:center; gap:5px; padding:5px 14px 6px;
+    background:var(--bg2); border-bottom:1px solid var(--line); overflow-x:auto; overflow-y:hidden;}
+  .topnav .grouplab{flex:0 0 auto; font-size:11px; letter-spacing:.6px; color:var(--muted); font-weight:600; white-space:nowrap;}
+  .topnav .sep{flex:0 0 auto; width:1px; height:15px; background:var(--line2); margin:0 5px;}
+  .topnav a{flex:0 0 auto; min-width:27px; height:22px; padding:0 7px; display:inline-flex; align-items:center; justify-content:center;
+    font-size:12px; font-variant-numeric:tabular-nums; color:var(--ink2); background:#141414;
+    border:1px solid var(--line2); border-radius:6px; cursor:pointer;}
+  .topnav a:hover{background:#1e1e1e; color:var(--ink);}
+  .topnav a.on{background:rgba(255,255,0,0.12); border-color:var(--yellow); color:var(--yellow); font-weight:700;}
+  .canvaswrap{position:relative; min-width:0; min-height:0; padding:6px 8px 0 8px;}
+  canvas{display:block; width:100%; height:100%;}
+  .hint{padding:7px 20px 0 20px; font-size:12.5px; color:var(--muted); height:38px; overflow:hidden;}
+  .hint b{color:var(--yellow); font-weight:600;}
+
+  /* ---------- 右栏读数 ---------- */
+  aside{background:var(--panel); border-left:1px solid var(--line); padding:10px 12px 14px; overflow-y:auto; min-height:0;}
+  aside h3{font-size:12px; color:var(--muted); margin:14px 0 6px; font-weight:600; letter-spacing:.5px;}
+  aside h3:first-child{margin-top:2px;}
+  .rd{display:flex; align-items:baseline; justify-content:space-between; gap:8px; padding:3px 0;
+    font-size:12.5px; color:var(--ink2); border-bottom:1px dashed #242424;}
+  .rd span{white-space:nowrap;}
+  .rd b{font-size:15px; color:var(--ink); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .rd b.yellow{color:var(--yellow);}
+  .rd b.gold{color:var(--gold);}
+  .rd b.phi{color:var(--phi);}
+  .rd b.green{color:var(--green);}
+  .rd b.pos{color:var(--pos);}
+  .rd b.neg{color:var(--neg);}
+  .formula{font-size:13.5px; color:var(--ink); background:#141414; border:1px solid var(--line2);
+    border-radius:8px; padding:8px 10px; line-height:1.5; word-break:break-word;}
+  .note{font-size:12.5px; color:var(--ink2); line-height:1.62;}
+  .note b{color:var(--yellow); font-weight:600;}
+  .grp{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .grp .lab{font-size:12.5px; color:var(--muted);}
+  button{font-family:inherit; font-size:12.5px; color:var(--ink2); background:#141414;
+    border:1px solid var(--line2); border-radius:6px; padding:5px 10px; cursor:pointer; white-space:nowrap;}
+  button:hover{background:#1e1e1e; color:var(--ink);}
+  button.on{background:rgba(255,255,0,0.12); border-color:var(--yellow); color:var(--yellow); font-weight:700;}
+  button.main{background:#1a1a1a; color:var(--ink);}
+
+  /* ---------- 底栏 ---------- */
+  footer{display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:6px;
+    padding:8px 14px 9px; background:var(--bg2); border-top:1px solid var(--line);}
+  .bar{position:relative; flex:1 1 150px; min-width:110px; height:6px; background:#141414; border-radius:3px; cursor:pointer;}
+  .bar i{display:block; height:100%; width:0; background:var(--yellow); border-radius:3px;}
+  .bar u{position:absolute; top:-2px; width:1px; height:10px; background:#4a4a4a;}
+  .slider{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted);}
+  .slider input[type=range]{width:96px; accent-color:#4a4a4a;}
+  .slider b{color:var(--ink); font-variant-numeric:tabular-nums; min-width:34px; text-align:right;}
+  .hidden{display:none !important;}
+
+  @media (max-width: 760px){
+    .stage{grid-template-columns:1fr;}
+    aside{border-left:none; border-top:1px solid var(--line); max-height:34vh;}
+    .hint{height:auto; min-height:34px; font-size:12px;}
+    header h1{font-size:14px;}
+    .steptitle{font-size:13px;}
+    .slider input[type=range]{width:74px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>10.2 电势差</h1>
+    <span class="act" id="actTag">第一幕</span>
+    <span class="steptitle" id="stepTitle">—</span>
+    <span class="stepsn" id="stepSn">1 / 21</span>
+  </header>
+
+  <nav class="topnav" id="toc" aria-label="步骤导航"></nav>
+
+  <div class="stage">
+    <div class="canvaswrap">
+      <canvas id="cv"></canvas>
+    </div>
+    <aside>
+      <div class="rd"><span>U<sub>AB</sub> = φA − φB</span><b class="yellow" id="rdUAB">+0 V</b></div>
+      <div class="rd"><span>U<sub>BA</sub> = −U<sub>AB</sub></span><b class="yellow" id="rdUBA">−0 V</b></div>
+      <div class="rd"><span>φA / φB</span><b id="rdPhi">0 / 0 V</b></div>
+      <div class="rd"><span>W（这一段路）</span><b class="gold" id="rdW">0 J</b></div>
+      <div class="rd"><span>电荷量 q</span><b id="rdQ">+1.0×10⁻⁹ C</b></div>
+      <div class="rd"><span>场强 E</span><b id="rdE">80 V/m</b></div>
+      <div class="rd"><span>零点 x₀</span><b id="rdX0">0.00 m</b></div>
+      <div class="rd"><span>等势面间距 d = ΔU/E</span><b id="rdD">0.50 m</b></div>
+      <div class="rd"><span>沿面场强分量 E∥ = E·sinθ</span><b id="rdPar">0 V/m</b></div>
+
+      <h3>这一刻的公式</h3>
+      <div class="formula" id="rdFormula">—</div>
+
+      <h3>视角</h3>
+      <div class="grp" id="wrapView">
+        <button data-view="oblique">斜视</button>
+        <button data-view="top">俯视</button>
+        <button data-view="side">侧视</button>
+        <button data-view="reset">↺ 复位</button>
+      </div>
+      <div class="note" style="margin-top:6px">在三维图上<b style="color:var(--gold)">拖动空白处</b>可自由旋转视角，滚轮缩放，双击复位。下面的俯视图始终是“物理空间”的正视图。</div>
+
+      <h3>提示</h3>
+      <div class="note" id="rdNote"></div>
+    </aside>
+  </div>
+
+  <div class="hint" id="hint"></div>
+
+  <footer>
+    <button id="btnPrev">◀ 上一步</button>
+    <button id="btnNext" class="main">下一步 ▶</button>
+    <button id="btnReset">↺ 复位本步</button>
+    <div class="bar" id="prog"><i></i></div>
+
+    <div class="slider" id="wrapT">
+      <span>走到哪儿</span><input type="range" id="rgT" min="0" max="100" value="100"><b id="lbT">100%</b>
+    </div>
+    <div class="slider" id="wrapLine">
+      <span>沿面位置</span><input type="range" id="rgLine" min="0" max="100" value="50"><b id="lbLine">50%</b>
+    </div>
+    <div class="slider" id="wrapE">
+      <span>场强 E</span><input type="range" id="rgE" min="60" max="120" step="5" value="80"><b id="lbE">80</b>
+    </div>
+    <div class="slider" id="wrapTheta">
+      <span>倾角 θ</span><input type="range" id="rgTheta" min="0" max="40" step="1" value="25"><b id="lbTheta">25°</b>
+    </div>
+    <div class="grp" id="wrapPath">
+      <span class="lab">路径</span>
+      <button data-path="line">直线</button>
+      <button data-path="poly">折线</button>
+      <button data-path="curve">曲线</button>
+    </div>
+    <div class="grp" id="wrapQ">
+      <span class="lab">电荷 q</span>
+      <button data-q="2">+2q₀</button>
+      <button data-q="1">+q₀</button>
+      <button data-q="-1">−q₀</button>
+      <button data-q="-2">−2q₀</button>
+      <button data-q="-1.5">教材 q′</button>
+    </div>
+    <div class="grp" id="wrapDir">
+      <span class="lab">方向</span>
+      <button data-dir="AB">U_AB</button>
+      <button data-dir="BA">U_BA</button>
+    </div>
+    <div class="grp" id="wrapMode">
+      <span class="lab">电场</span>
+      <button data-mode="uniform">匀强</button>
+      <button data-mode="point">点电荷</button>
+    </div>
+  </footer>
+</div>
+
+<script>
+/* =====================================================================
+   viz_pd_physics.js —— 纯物理内核（不依赖 DOM，可在 node 里直接跑自检）
+
+   课题：10.2 电势差 · 匀强电场里的"电势差"与"W = qU"
+   口径（与教材 P31–34 例题逐条对齐，课上读数与课本同一套数）：
+     E    = 80 V/m（方向 +x，沿 +x 电势降低）—— 可调 60–120
+     x    ∈ [−2.8, 2.8] m；x0 = 零电势面位置（可拖）
+     φ(x) = E(x0 − x)              V      相对量：与 x0 有关
+     U_AB = φA − φB = E(xB − xA)   V      绝对量：与 x0 无关  ★本节主角
+     W_AB = qU_AB = qE(xB − xA)    J      与路径无关、与力的大小无关
+     U_BA = −U_AB；U_AB + U_BC = U_AC（中间项抵消）
+     教材例题三点（E=80、x0=0）：xC=−0.75、xA=+0.75、xB=+1.75 m
+       → φC=+60、φA=−60、φB=−140 V；U_AB=+80、U_BC=−200、U_AC=−120 V
+     等势面：φ = k·ΔU 的那条线在 u = x0 − kΔU/E；相邻面间距 d = ΔU/E
+     点电荷（第20–21步对照用，2D 剖面）：φ = kQ/r，等势面是同心球面的剖面
+     反证法：假设的"等势面"与电场线夹角 θ → 沿面移动 s 的 Δu = s·sinθ
+             → W = qE·s·sinθ ≠ 0，与"这是等势面"矛盾；θ=0 时 W=0
+   ===================================================================== */
+(function (global) {
+  'use strict';
+
+  var E_FIELD = 80;                 // 匀强电场场强 (V/m)，方向沿 +x
+  var E_MIN = 60, E_MAX = 120;      // 场强可调范围 (V/m)
+  var X_MIN = -2.8, X_MAX = 2.8;    // 场区范围 (m)
+  var Q0 = 1.0e-9;                  // 电荷量单位 (C)：q = 倍率 × Q0
+  var Q_LIST = [2, 1, -1, -2];      // 可切换的电荷量倍率
+  var Q_EXAMPLE = -1.5;             // 教材例题第三刀的 q′ = −1.5×10⁻⁹ C（倍率）
+  var DU = 40;                      // 等势面电势差步长 (V)："相邻等势面电势差相等"
+  var KQ = 78;                      // 点电荷模式的 kQ (V·m)：φ = kQ/r
+  var R_MIN = 0.35, R_MAX = 2.8;    // 点电荷模式的可视半径范围 (m)
+
+  /* ---------- 匀强电场 ---------- */
+
+  /** 电势：φ(x) = E(x0 − x)，与试探电荷无关（有正负，沿场线方向降低） */
+  function phiAt(x, x0, E) {
+    E = (E === undefined ? E_FIELD : E);
+    return E * (x0 - x);
+  }
+
+  /** 电势差：U_AB = φA − φB = E(xB − xA) —— 与零点 x0 无关（★本节第一结论） */
+  function uAB(xA, xB, E) {
+    E = (E === undefined ? E_FIELD : E);
+    return E * (xB - xA);
+  }
+
+  /** 反过来的电势差：U_BA = φB − φA = −U_AB */
+  function uBA(xA, xB, E) { return -uAB(xA, xB, E); }
+
+  /** 静电力做的功：W_AB = qU_AB = qE(xB − xA)，只与始末位置有关 */
+  function work(q, x1, x2, E) {
+    E = (E === undefined ? E_FIELD : E);
+    return q * E * (x2 - x1);
+  }
+
+  /** 电势能：Ep = qφ = qE(x0 − x)（相对量，随零点变；ΔEp = −W 与零点无关） */
+  function epAt(q, x, x0, E) {
+    E = (E === undefined ? E_FIELD : E);
+    return q * E * (x0 - x);
+  }
+
+  /** 静电力（带符号，沿 +x 为正） */
+  function force(q, E) {
+    E = (E === undefined ? E_FIELD : E);
+    return q * E;
+  }
+
+  /** 电荷量倍率 → 库仑 */
+  function qOf(mul) { return mul * Q0; }
+
+  /** 匀强电场的等势面间距 d = ΔU / E（"越密 → 场强越大"） */
+  function equivGap(dU, E) {
+    E = (E === undefined ? E_FIELD : E);
+    return dU / E;
+  }
+
+  /** 第 k 条等势面（φ = k·ΔU）所在的 u 坐标 */
+  function contourU(k, x0, E, dU) {
+    dU = (dU === undefined ? DU : dU);
+    return x0 - k * dU / ((E === undefined ? E_FIELD : E));
+  }
+
+  /* ---------- 点电荷（2D 剖面，第20–21步对照用） ---------- */
+
+  /** φ = kQ/r（正点电荷，向外电势降低） */
+  function phiPoint(r, kq) {
+    kq = (kq === undefined ? KQ : kq);
+    return kq / Math.max(1e-6, r);
+  }
+
+  /**
+   * 等势面（球面）半径序列：φ = k·ΔU → r = kQ/(kΔU)
+   * 按 φ 从大到小（即从里到外）排列 → r 递增、相邻间距递增（越近越密）
+   */
+  function pointRadii(kq, dU, kMax) {
+    kq = (kq === undefined ? KQ : kq);
+    dU = (dU === undefined ? DU : dU);
+    kMax = (kMax === undefined ? 4 : kMax);
+    var out = [], k;
+    for (k = kMax; k >= 1; k--) {
+      var r = kq / (k * dU);
+      if (r < R_MIN || r > R_MAX) { continue; }
+      out.push({ k: k, phi: k * dU, r: r });
+    }
+    return out;
+  }
+
+  /* ---------- 反证法：假设的"等势面" ---------- */
+  /* 真实等势面 ⟂ 电场线（θ=0）。假设它与电场线成 θ 角（θ≠0 时它根本不是等势面） */
+
+  /** 假设面上沿面移动 s 时，沿场线方向的分量 Δu = s·sinθ */
+  function alongComp(s, theta) { return s * Math.sin(theta); }
+
+  /** 沿假设面移动 s 时静电力做的功：W = q·E·s·sinθ（θ=0 → 0） */
+  function workOnAssumed(q, E, theta, s) {
+    E = (E === undefined ? E_FIELD : E);
+    return q * E * s * Math.sin(theta);
+  }
+
+  /** 沿假设面的场强分量 E∥ = E·sinθ（正是教材"电场强度有一个沿着等势面的分量"） */
+  function parComp(E, theta) {
+    E = (E === undefined ? E_FIELD : E);
+    return E * Math.sin(theta);
+  }
+
+  /** 过 p0、与 v 轴（真等势面方向）成 θ 角的直线，半长 half（θ=0 即真等势面） */
+  function assumedLine(p0, theta, half) {
+    var du = Math.sin(theta), dv = Math.cos(theta);
+    return [
+      { x: p0.x - du * half, y: p0.y - dv * half },
+      { x: p0.x + du * half, y: p0.y + dv * half }
+    ];
+  }
+
+  /** 假设面上参数 t ∈ [0,1] 处的点（s 为离开 p0 的位移，带符号） */
+  function assumedPoint(p0, theta, t, half) {
+    var du = Math.sin(theta), dv = Math.cos(theta), s = (t - 0.5) * 2 * half;
+    return { x: p0.x + du * s, y: p0.y + dv * s, s: s };
+  }
+
+  /* ---------- 路径（与 10.1 同构，供"沿路径走"复用） ---------- */
+
+  /** 任意曲线：从 A 到 B 的平滑曲线（中点向上鼓），离散成 N 段 */
+  function curvePoints(A, B, N) {
+    N = Math.max(1, Math.round(N || 16));
+    var amp = 0.45 + 0.35 * (B.y - A.y);
+    var pts = [];
+    for (var i = 0; i <= N; i++) {
+      var t = i / N;
+      pts.push({
+        x: A.x + (B.x - A.x) * t,
+        y: A.y + (B.y - A.y) * t + amp * Math.sin(Math.PI * t)
+      });
+    }
+    return pts;
+  }
+
+  /**
+   * 把一条折线拆成"每小段"的账：每段 =「沿场线的一步 Δu」＋「横穿的一步 Δv」
+   *   沿场线：ΔW = qE·Δu      横穿：F ⊥ 位移 → ΔW = 0（等势面上移动不做功）
+   */
+  function accumulate(points, q, E) {
+    E = (E === undefined ? E_FIELD : E);
+    var segs = [], W = 0, sumDx = 0, sumDy = 0;
+    for (var i = 0; i + 1 < points.length; i++) {
+      var p1 = points[i], p2 = points[i + 1];
+      var dx = p2.x - p1.x, dy = p2.y - p1.y;
+      var wAlong = q * E * dx, wCross = 0;
+      segs.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, dx: dx, dy: dy, w: wAlong + wCross, wAlong: wAlong, wCross: wCross });
+      W += wAlong + wCross; sumDx += dx; sumDy += dy;
+    }
+    return { W: W, sumDx: sumDx, sumDy: sumDy, segs: segs };
+  }
+
+  /** 三条典型路径：直线 A→B、折线 A→M→B（M 为 A 沿场线到 B 的垂足）、任意曲线 */
+  function pathsFor(A, B, N) {
+    var M = { x: B.x, y: A.y };
+    return { M: M, line: [A, B], polyline: [A, M, B], curve: curvePoints(A, B, N) };
+  }
+
+  /* ---------- 自检 ---------- */
+
+  function _eq(a, b, tol) { return Math.abs(a - b) <= (tol === undefined ? 1e-9 : tol); }
+
+  function runSelfTest() {
+    var fails = [], checks = 0;
+    function ok(cond, msg) { checks++; if (!cond) { fails.push(msg); } }
+
+    var x0s = [-1.6, -0.5, 0, 0.7, 1.6];
+    var Es = [60, 80, 100, 120];
+    var qs = [2, 1, -1, -2];
+    var ABs = [
+      [{ x: -1.4, y: -0.6 }, { x: 1.2, y: 0.6 }],
+      [{ x: 0.75, y: 0 }, { x: 1.75, y: 0 }],
+      [{ x: -2.4, y: 0.9 }, { x: -2.4, y: -0.9 }]
+    ];
+    var i, j, k, A, B, q, E, x0;
+
+    /* 1) ★ U 与零点无关：同一对 A、B、同一个 E，随便换零点，U 完全相同 */
+    for (i = 0; i < ABs.length; i++) {
+      A = ABs[i][0]; B = ABs[i][1];
+      for (j = 0; j < Es.length; j++) {
+        E = Es[j];
+        var u0 = uAB(A.x, B.x, E);
+        for (k = 0; k < x0s.length; k++) {
+          x0 = x0s[k];
+          ok(_eq(u0, phiAt(A.x, x0, E) - phiAt(B.x, x0, E)),
+            'U_AB 应与零点无关：x0=' + x0 + ' E=' + E);
+        }
+      }
+    }
+
+    /* 2) U_BA = −U_AB；可加性 U_AB + U_BC = U_AC（教材例题三点） */
+    var xa = 0.75, xb = 1.75, xc = -0.75;
+    for (j = 0; j < Es.length; j++) {
+      E = Es[j];
+      ok(_eq(uBA(xa, xb, E), -uAB(xa, xb, E)), 'U_BA 应等于 −U_AB（E=' + E + '）');
+      ok(_eq(uAB(xa, xb, E) + uAB(xb, xc, E), uAB(xa, xc, E)),
+        '可加性 U_AB + U_BC 应等于 U_AC（E=' + E + '）');
+    }
+
+    /* 3) ★ 教材例题四问逐条复现（E=80、x0=0） */
+    var EX = 80, X0 = 0;
+    ok(_eq(uAB(xa, xb, EX), 80), '教材 U_AB 应为 +80 V，实际 ' + uAB(xa, xb, EX));
+    ok(_eq(uAB(xb, xc, EX), -200), '教材 U_BC 应为 −200 V，实际 ' + uAB(xb, xc, EX));
+    ok(_eq(uAB(xa, xc, EX), -120), '教材 U_AC 应为 −120 V，实际 ' + uAB(xa, xc, EX));
+    ok(_eq(work(qOf(2.0), xa, xb, EX), 1.6e-7, 1e-18), '教材 W_AB 应为 1.6×10⁻⁷ J');
+    ok(_eq(work(qOf(2.0), xb, xc, EX), -4.0e-7, 1e-18), '教材 W_BC 应为 −4.0×10⁻⁷ J');
+    var wAC = work(qOf(Q_EXAMPLE), xa, xc, EX);
+    ok(_eq(wAC, 1.8e-7, 1e-18), '教材第三刀 W_AC(q′=−1.5×10⁻⁹C) 应为 +1.8×10⁻⁷ J，实际 ' + wAC);
+    ok(wAC > 0, '教材第三刀应为正功');
+    ok(phiAt(xc, X0, EX) > phiAt(xa, X0, EX) && phiAt(xa, X0, EX) > phiAt(xb, X0, EX),
+      '教材高低排序应为 φC > φA > φB');
+
+    /* 4) W_AB = qU_AB = EpA − EpB，且 ΔEp 与零点无关 */
+    for (i = 0; i < ABs.length; i++) {
+      A = ABs[i][0]; B = ABs[i][1];
+      for (j = 0; j < qs.length; j++) {
+        q = qOf(qs[j]); E = EX;
+        ok(_eq(work(q, A.x, B.x, E), q * uAB(A.x, B.x, E)), 'W_AB 应等于 qU_AB（q=' + qs[j] + '）');
+        var dEp = epAt(q, A.x, 0, E) - epAt(q, B.x, 0, E);
+        ok(_eq(dEp, work(q, A.x, B.x, E)), 'W_AB 应等于 EpA − EpB（q=' + qs[j] + '）');
+        for (k = 0; k < x0s.length; k++) {
+          x0 = x0s[k];
+          ok(_eq(epAt(q, A.x, x0, E) - epAt(q, B.x, x0, E), dEp),
+            'ΔEp 应与零点无关（q=' + qs[j] + ' x0=' + x0 + '）');
+        }
+      }
+    }
+
+    /* 5) φ 与试探电荷无关；边界 */
+    for (j = 0; j < qs.length; j++) {
+      q = qOf(qs[j]);
+      ok(_eq(epAt(q, 1.2, 0.5, EX) / q, phiAt(1.2, 0.5, EX)), 'Ep/q 应等于 φ（q=' + qs[j] + '）');
+    }
+    ok(_eq(work(0, -1, 1, EX), 0), 'q=0 时不做功');
+    ok(_eq(uAB(1.2, 1.2, EX), 0), 'A=B 时 U=0');
+    ok(uAB(1.6, -0.4, EX) < 0, 'B 在 A 左侧时 U<0');
+
+    /* 6) ★ 沿等势面（Δu = 0）移动：任意路径、任意分段数，W 恒为 0 */
+    var Ns = [1, 2, 3, 8, 32];
+    for (j = 0; j < qs.length; j++) {
+      q = qOf(qs[j]);
+      for (k = 0; k < Ns.length; k++) {
+        var vp = [{ x: 0.4, y: -1.0 }];
+        for (var m = 0; m <= Ns[k]; m++) { vp.push({ x: 0.4, y: -1.0 + 2.0 * m / Ns[k] }); }
+        var rv = accumulate(vp, q, EX);
+        ok(_eq(rv.W, 0), '沿等势面移动应不做功（q=' + qs[j] + ' N=' + Ns[k] + '）');
+        ok(_eq(rv.sumDx, 0), '沿等势面的 ΣΔu 应为 0');
+      }
+    }
+
+    /* 7) ★ 反证法：假设面倾角 θ≠0 → 沿面移动一定做功；θ=0 → 不做功 */
+    var thetas = [5, 10, 20, 40], halfs = [0.2, 0.6, 1.0];
+    for (j = 0; j < thetas.length; j++) {
+      var th = thetas[j] * Math.PI / 180;
+      for (k = 0; k < halfs.length; k++) {
+        var s0 = 2 * halfs[k];
+        var line = assumedLine({ x: 0.3, y: 0 }, th, halfs[k]);
+        var rr = accumulate(line, qOf(1), EX);
+        var wex = workOnAssumed(qOf(1), EX, th, s0);
+        ok(_eq(rr.W, wex, 1e-20), '沿假设面做功应等于 qE·s·sinθ（θ=' + thetas[j] + '° s=' + s0.toFixed(1) + '）');
+        ok(Math.abs(rr.W) > 0, 'θ=' + thetas[j] + '° 时沿假设面必须做功');
+        ok(_eq(Math.abs(parComp(EX, th)), EX * Math.sin(th)), '沿面场强分量 E∥ = E·sinθ');
+      }
+    }
+    var flat = accumulate(assumedLine({ x: 0.3, y: 0 }, 0, 1.0), qOf(1), EX);
+    ok(_eq(flat.W, 0), 'θ=0（真等势面）时沿面移动不做功');
+    ok(_eq(parComp(EX, 0), 0), 'θ=0 时沿面场强分量应为 0');
+
+    /* 8) 疏密 ↔ 场强：E 越大匀强电场的等势面越密；点电荷越远越疏 */
+    var prevD = Infinity;
+    for (j = 0; j < Es.length; j++) {          // E 从小到大 → 间距应递减
+      var d = equivGap(DU, Es[j]);
+      ok(d < prevD, 'E=' + Es[j] + ' 的等势面间距应比更小的场强更小');
+      prevD = d;
+      ok(_eq(contourU(1, 0, Es[j]), -d), '等势面坐标应由 d = ΔU/E 给出');
+    }
+    var rr2 = pointRadii(KQ, DU, 6);
+    ok(rr2.length >= 3, '点电荷应给出至少 3 条可视等势面，实际 ' + rr2.length);
+    for (j = 1; j < rr2.length; j++) {
+      ok(rr2[j].r > rr2[j - 1].r, '点电荷等势面半径应单调增大');
+      if (j >= 2) {
+        ok((rr2[j].r - rr2[j - 1].r) > (rr2[j - 1].r - rr2[j - 2].r),
+          '点电荷等势面间距应越远越大（越近越密）');
+      }
+    }
+    for (j = 0; j < rr2.length; j++) {
+      ok(_eq(phiPoint(rr2[j].r, KQ), rr2[j].phi, 1e-9), '点电荷等势面上 φ 应等于 k·ΔU');
+    }
+
+    /* 9) 方向性结论（必须由推证得到，不由类比赠予） */
+    ok(phiAt(0.5, 0, EX) > phiAt(1.5, 0, EX), '沿 +x（场线方向）φ 应降低');
+    ok(force(qOf(1), EX) > 0 && force(qOf(-1), EX) < 0, '正电荷受力沿 +x、负电荷沿 −x');
+
+    return { pass: fails.length === 0, checks: checks, failed: fails };
+  }
+
+  var api = {
+    E_FIELD: E_FIELD, E_MIN: E_MIN, E_MAX: E_MAX,
+    X_MIN: X_MIN, X_MAX: X_MAX,
+    Q0: Q0, Q_LIST: Q_LIST, Q_EXAMPLE: Q_EXAMPLE,
+    DU: DU, KQ: KQ, R_MIN: R_MIN, R_MAX: R_MAX,
+    phiAt: phiAt, uAB: uAB, uBA: uBA, work: work, epAt: epAt, force: force, qOf: qOf,
+    equivGap: equivGap, contourU: contourU,
+    phiPoint: phiPoint, pointRadii: pointRadii,
+    alongComp: alongComp, workOnAssumed: workOnAssumed, parComp: parComp,
+    assumedLine: assumedLine, assumedPoint: assumedPoint,
+    curvePoints: curvePoints, accumulate: accumulate, pathsFor: pathsFor,
+    runSelfTest: runSelfTest
+  };
+
+  global.VizPhys = api;
+  if (typeof module !== 'undefined' && module.exports) { module.exports = api; }
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* =====================================================================
+   viz_pd_render.js —— 绘制层（10.2 电势差）
+
+   视觉语言：原版 Manim（3Blue1Brown）基调 —— 纯黑底、白线为主、Manim 官方色常量
+     红 #FC6255 = φ>0 那一半面 ｜ 蓝 #58C4DD = φ<0 那一半面
+     黄 #FFFF00 = 本课主角量（电势差 U 的量规）｜ 金 #F0AC5F = W 柱（次强调）
+     白 = 几何（网格、轴、等势面、电场线、零电势面、A/B/C 标记）｜ 灰 = 假设的面（不是等势面）
+
+   画面结构（与 10.1 同一套栅格，换课不换画面）：
+     上：φ 地形面（面高 = 电势 φ，只由 E 与零点决定，与试探电荷无关）
+     下：俯视图"物理空间"（平行板、电场线、等势线、A/B/C、电荷与静电力）
+     两张图共用同一条 u 轴 = 沿场线方向。
+   ===================================================================== */
+(function (global) {
+  'use strict';
+
+  var P = global.VizPhys;
+
+  /* ---------- 配色：Manim 官方色常量，只改这一处（改配色必须同步 风格与技术路线.md） ---------- */
+  var THEME = {
+    bg: '#000000',
+    posFill: 'rgba(252,98,85,0.22)',     // φ > 0 那一半面
+    posLine: '#FC6255',
+    negFill: 'rgba(88,196,221,0.22)',    // φ < 0 那一半面
+    negLine: '#58C4DD',
+    wire: 'rgba(255,255,255,0.22)',      // 白色网格
+    wireStrong: 'rgba(255,255,255,0.55)',
+    base: 'rgba(136,136,136,0.12)',      // 基准面
+    baseLine: 'rgba(136,136,136,0.30)',
+    ink: '#FFFFFF', ink2: '#888888', muted: '#888888',   // 画布内只用 Manim 常量：白 = 主，GREY = 次
+    gold: '#F0AC5F',                     // W 柱
+    yellow: '#FFFF00',                   // U 量规（本课结论色）
+    green: '#83C167', phi: '#9A72AC',
+    zero: '#FFFFFF',                     // 零电势面（白虚线）
+    assumed: 'rgba(136,136,136,0.9)',    // 假设的面（灰——它不是等势面）
+    contour: 'rgba(255,255,255,0.50)'    // 等势面/等高线
+  };
+
+  var U0 = -2.8, U1 = 2.8;         // 沿场线方向的范围 (m)
+  var V0 = -1.2, V1 = 1.2;         // 垂直方向的范围 (m)
+  var X0MIN = -1.7, X0MAX = 1.7;   // 零电势面可放的范围 (m)
+  var HMAX = 240;                  // 高度轴可视范围 (V)
+  var KH = 0.0082;                 // 伏 → 图形高度(m)：±240 V ↔ ±1.97 m
+  var QREF = 1;                    // 地形面按“单位正电荷”画 → 面的高度在数值上就是 φ(V)
+
+  /* 本课走过的三条“路”的共同参照点（第18、19步：过 A 点的等势面 / 假设面） */
+  var PIVOT_U = 0.75, HALF = 1.0;
+
+  /* ---------- 基础 ---------- */
+  function fitCanvas(cv) {
+    var dpr = Math.min(2, global.devicePixelRatio || 1);
+    var r = cv.getBoundingClientRect();
+    var W = Math.max(420, Math.round(r.width)), H = Math.max(300, Math.round(r.height));
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) {
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    }
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, W: W, H: H };
+  }
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  /** 功：一律用教材的 10⁻⁷ J 量级显示（与右栏、与课本例题同一套写法） */
+  function fmtJ(W) {
+    if (Math.abs(W) < 1e-18) { return '0 J'; }
+    var m = W / 1e-7;
+    return (m > 0 ? '+' : '−') + Math.abs(m).toFixed(2) + '×10⁻⁷ J';
+  }
+
+  /**
+   * 场景几何：正交三维相机
+   *   cam = { az, el, zoom }；世界坐标 (u, v, h)：u 沿场线、v 垂直场线、h = 电势 φ (V)
+   *   拖动视角时自动取景，保证地面四角与高度范围始终在框内。
+   */
+  function makeScene(W, H, cam) {
+    cam = cam || { az: 0.38, el: 0.45, zoom: 1 };
+    var mainH = H * 0.70, stripTop = H * 0.735, stripH = H - stripTop - 8;
+    var az = cam.az, el = cam.el;
+    var ca = Math.cos(az), sa = Math.sin(az), se = Math.sin(el), ce = Math.cos(el);
+
+    var hzMax = HMAX * KH;                                // 高度可视范围（米等效）
+    var rxMin = 1e9, rxMax = -1e9, ryMin = 1e9, ryMax = -1e9;
+    var us = [U0, U1], vs = [V0, V1], hzs = [-hzMax, 0, hzMax];
+    for (var i = 0; i < 2; i++) {
+      for (var j = 0; j < 2; j++) {
+        for (var k = 0; k < 3; k++) {
+          var rx = us[i] * ca - vs[j] * sa;
+          var ry = -us[i] * sa * se - vs[j] * ca * se + hzs[k] * ce;
+          if (rx < rxMin) { rxMin = rx; } if (rx > rxMax) { rxMax = rx; }
+          if (ry < ryMin) { ryMin = ry; } if (ry > ryMax) { ryMax = ry; }
+        }
+      }
+    }
+    var S0 = Math.min(W * 0.82 / Math.max(0.001, rxMax - rxMin),
+                      mainH * 0.82 / Math.max(0.001, ryMax - ryMin));
+    var S = S0 * (cam.zoom || 1);
+    var cx = W / 2 - (rxMin + rxMax) / 2 * S;
+    var cy = mainH / 2 + (ryMin + ryMax) / 2 * S;
+
+    function main(u, v, h) {
+      var hz = (h || 0) * KH;
+      var rx = u * ca - v * sa;
+      var ry = -u * sa * se - v * ca * se + hz * ce;
+      return { x: cx + rx * S, y: cy - ry * S };
+    }
+    var su2 = W * 0.151, sv2 = stripH * 0.30;
+    var ox2 = W * 0.50, oy2 = stripTop + stripH * 0.52;
+    function strip(u, v) {
+      return { x: ox2 + u * su2, y: oy2 - v * sv2 };
+    }
+    function stripInv(dx, dy) {
+      return { du: dx / su2, dv: -dy / sv2 };
+    }
+    return {
+      W: W, H: H, mainH: mainH, stripTop: stripTop, stripH: stripH,
+      S: S, KH: KH, sh: S * KH * ce, su: S, sv: S * se, ca: ca, sa: sa, az: az, el: el,
+      su2: su2, sv2: sv2, ox2: ox2, oy2: oy2,
+      main: main, strip: strip, stripInv: stripInv
+    };
+  }
+
+  /** 屏幕上“沿 u 方向”每移动 1 px 对应多少个 u（拖动用，任意视角都准） */
+  function uPerPixel(S, u, v, h) {
+    var p0 = S.main(u, v, h), p1 = S.main(u + 0.05, v, h);
+    var dx = (p1.x - p0.x) / 0.05, dy = (p1.y - p0.y) / 0.05;
+    var len2 = dx * dx + dy * dy;
+    if (len2 < 1e-9) { return 0; }
+    return { dx: dx, dy: dy, len2: len2 };
+  }
+
+  /* ---------- 小工具 ---------- */
+  function seg(ctx, a, b, color, w, dash) {
+    ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = w || 1;
+    if (dash) { ctx.setLineDash(dash); }
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore();
+  }
+  function text(ctx, str, x, y, color, size, align, weight) {
+    ctx.save();
+    ctx.fillStyle = color; ctx.font = (weight || '500') + ' ' + (size || 13) + 'px "Microsoft YaHei","PingFang SC","WenQuanYi Zen Hei",sans-serif';
+    ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(str, x, y); ctx.restore();
+  }
+  function dot(ctx, p, r, fill, stroke) {
+    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.6; ctx.stroke(); }
+  }
+  function arrow(ctx, a, b, color, w, head) {
+    head = head || 8;
+    ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w || 1.8;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    var an = Math.atan2(b.y - a.y, b.x - a.x);
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y);
+    ctx.lineTo(b.x - head * Math.cos(an - 0.4), b.y - head * Math.sin(an - 0.4));
+    ctx.lineTo(b.x - head * Math.cos(an + 0.4), b.y - head * Math.sin(an + 0.4));
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  /** 带双向箭头的“量规”（画电势差用） */
+  function dimArrow(ctx, a, b, color, w) {
+    var an = Math.atan2(b.y - a.y, b.x - a.x), h = 7;
+    ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w || 2.2;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    var ends = [[a, an], [b, an + Math.PI]];
+    for (var i = 0; i < 2; i++) {
+      var p = ends[i][0], a2 = ends[i][1];
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x - h * Math.cos(a2 - 0.42), p.y - h * Math.sin(a2 - 0.42));
+      ctx.lineTo(p.x - h * Math.cos(a2 + 0.42), p.y - h * Math.sin(a2 + 0.42));
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /* ---------- 基准面 / 地形面 ---------- */
+  function drawBasePlane(ctx, S) {
+    var c = [S.main(U0, V0, 0), S.main(U1, V0, 0), S.main(U1, V1, 0), S.main(U0, V1, 0)];
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(c[0].x, c[0].y);
+    for (var i = 1; i < 4; i++) { ctx.lineTo(c[i].x, c[i].y); }
+    ctx.closePath(); ctx.fillStyle = THEME.base; ctx.fill();
+    for (var u = U0; u <= U1 + 1e-6; u += 0.7) {
+      seg(ctx, S.main(u, V0, 0), S.main(u, V1, 0), THEME.baseLine, 1);
+    }
+    for (var v = V0; v <= V1 + 1e-6; v += 0.6) {
+      seg(ctx, S.main(U0, v, 0), S.main(U1, v, 0), THEME.baseLine, 1);
+    }
+    ctx.restore();
+  }
+
+  /** 地形面：在 u = x0 处精确切成两块（红 = φ>0、蓝 = φ<0）+ 白色网格 */
+  function drawSurface(ctx, S, s) {
+    var x0 = s.x0, E = s.E;
+    var c0 = S.main(U0, V0, P.phiAt(U0, x0, E)), c1 = S.main(U1, V0, P.phiAt(U1, x0, E));
+    var c2 = S.main(U1, V1, P.phiAt(U1, x0, E)), c3 = S.main(U0, V1, P.phiAt(U0, x0, E));
+
+    var xc = clamp(x0, U0, U1);
+    var us = [U0, xc, U1];
+    var cols = [THEME.posFill, THEME.negFill];
+    for (var k = 0; k < 2; k++) {
+      var ua = us[k], ub = us[k + 1];
+      if (ub - ua < 1e-6) { continue; }
+      var ha = P.phiAt(ua, x0, E), hb = P.phiAt(ub, x0, E);
+      var p1 = S.main(ua, V0, ha), p2 = S.main(ub, V0, hb), p3 = S.main(ub, V1, hb), p4 = S.main(ua, V1, ha);
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p3.x, p3.y); ctx.lineTo(p4.x, p4.y); ctx.closePath();
+      ctx.fillStyle = cols[k]; ctx.fill(); ctx.restore();
+    }
+
+    var k2, gridCol = THEME.wire;
+    for (k2 = 0; k2 <= 16; k2++) {                    // 坡向线（沿 u）
+      var v = lerp(V0, V1, k2 / 16);
+      seg(ctx, S.main(U0, v, P.phiAt(U0, x0, E)), S.main(U1, v, P.phiAt(U1, x0, E)), gridCol, 1);
+    }
+    for (k2 = 0; k2 <= 14; k2++) {                    // 横线（等高方向，淡）
+      var uu = lerp(U0, U1, k2 / 14), hh = P.phiAt(uu, x0, E);
+      seg(ctx, S.main(uu, V0, hh), S.main(uu, V1, hh), 'rgba(255,255,255,0.10)', 1);
+    }
+    ctx.save(); ctx.strokeStyle = THEME.wireStrong; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y);
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+  }
+
+  /** 等势面 = 地形面上的等高线：φ = k·ΔU 的那些线（匀强电场里是等间距的直线） */
+  function drawContours(ctx, S, s) {
+    var E = s.E, dU = P.DU, k, n = 0;
+    for (k = -6; k <= 6; k++) {
+      if (k === 0) { continue; }
+      var u = P.contourU(k, s.x0, E, dU);
+      if (u < U0 - 1e-6 || u > U1 + 1e-6) { continue; }
+      var h = k * dU;
+      seg(ctx, S.main(u, V0, h), S.main(u, V1, h), THEME.contour, 1.6);
+      if (k % 2 === 0 && n < 4) {                    // 只标 4 处，避免堆字
+        var lp = S.main(u, V1, h);
+        text(ctx, h + ' V', lp.x, lp.y - 11, 'rgba(255,255,255,0.75)', 12);
+        n++;
+      }
+    }
+    if (n === 0 || S.W < 760) { return; }
+    text(ctx, '等势面（ΔU = ' + dU + ' V 一条，等间距）', 16, S.mainH - 34, THEME.ink2, 12.5, 'left');
+  }
+
+  /** 零电势面（u = x0 处坡面与基准面相交的那条线） */
+  function drawZeroLine(ctx, S, s) {
+    var a = S.main(s.x0, V0, 0), b = S.main(s.x0, V1, 0);
+    seg(ctx, a, b, THEME.zero, 2.6, [7, 5]);
+    text(ctx, S.W < 760 ? 'φ = 0' : 'φ = 0（零电势面，可拖）', a.x + (s.x0 > 0 ? -8 : 8), a.y + 16,
+      THEME.zero, 12.5, s.x0 > 0 ? 'right' : 'left');
+  }
+
+  /** 高度轴（φ / V） */
+  function drawHeightAxis(ctx, S) {
+    if (S.sh * 80 < 22) {                 // 俯视时高度在屏幕上退化
+      var ny = (S.W < 760) ? (S.mainH - 12) : (S.mainH - 32);
+      text(ctx, '俯视看不出高度 → 切「斜视 / 侧视」', 16, ny, 'rgba(136,136,136,0.9)', 12.5, 'left');
+      return;
+    }
+    var cor = S.main(U0 - 0.05, V0 - 0.05, 0);
+    var ax = Math.max(40, Math.min(cor.x - 18, S.W * 0.16));
+    var y0 = cor.y;
+    var top = y0 - HMAX * 0.78 * S.sh, bot = y0 + HMAX * 0.78 * S.sh;
+    arrow(ctx, { x: ax, y: bot }, { x: ax, y: top }, 'rgba(255,255,255,0.45)', 1.4, 8);
+    text(ctx, 'φ / V', ax + 22, top + 4, THEME.ink2, 12.5);
+    for (var h = -160; h <= 160; h += 80) {
+      var y = y0 - h * S.sh;
+      if (Math.abs(h) > HMAX * 0.8) { continue; }
+      seg(ctx, { x: ax - 5, y: y }, { x: ax + 5, y: y }, 'rgba(255,255,255,0.45)', 1.2);
+      text(ctx, (h > 0 ? '+' : '') + h, ax - 9, y, THEME.muted, 11.5, 'right');
+    }
+    text(ctx, '0', ax - 9, y0, THEME.ink2, 11.5, 'right');
+  }
+
+  /* ---------- ★ 电势差量规：两根高度柱 + 一根黄色差值标尺 ---------- */
+  /**
+   * pa、pb = {u, v, name}；画出：
+   *   两根白色高度柱（基准面 → 面高 = φ）
+   *   顶端引出的白色虚线
+   *   两顶端之间的黄色双向箭头 = U（dir='AB' 时标签 U_AB=φA−φB）
+   * 俯视看不到高度时，退化到俯视图里画一根水平量规（U = E·Δu，水平距离就代表 U）
+   */
+  function drawGaugePair(ctx, S, s, pa, pb, dir, noLabel) {
+    var x0 = s.x0, E = s.E;
+    var phiA = P.phiAt(pa.u, x0, E), phiB = P.phiAt(pb.u, x0, E);
+    var U = (dir === 'BA') ? (phiB - phiA) : (phiA - phiB);
+    var lab = 'U_' + dir + ' = ' + (U > 0 ? '+' : '') + U.toFixed(0) + ' V';
+
+    if (S.sh * 80 < 22) {                        // —— 俯视退化：水平量规 ——
+      var a2 = S.strip(pa.u, pa.v), b2 = S.strip(pb.u, pb.v);
+      dimArrow(ctx, a2, b2, THEME.yellow, 2.2);
+      if (!noLabel) { text(ctx, lab, (a2.x + b2.x) / 2, a2.y - 16, THEME.yellow, 13.5, 'center', '700'); }
+      return { U: U };
+    }
+
+    var baseA = S.main(pa.u, pa.v, 0), topA = S.main(pa.u, pa.v, phiA);
+    var baseB = S.main(pb.u, pb.v, 0), topB = S.main(pb.u, pb.v, phiB);
+    seg(ctx, baseA, topA, 'rgba(255,255,255,0.55)', 2);
+    seg(ctx, baseB, topB, 'rgba(255,255,255,0.55)', 2);
+
+    // 尺寸线：屏幕空间里竖直 —— 引线水平引到量规轨，竖直箭头的长度就是 |U| 的像素长度
+    var laneX = Math.min(S.main(U1 - 0.28 + (pa.lane || 0), 0, 0).x, S.W - 148);
+    var la = { x: laneX, y: topA.y }, lb = { x: laneX, y: topB.y };
+    seg(ctx, topA, la, 'rgba(255,255,255,0.32)', 1.2, [4, 4]);
+    seg(ctx, topB, lb, 'rgba(255,255,255,0.32)', 1.2, [4, 4]);
+    dimArrow(ctx, la, lb, THEME.yellow, 2.2);
+    if (!noLabel) { text(ctx, lab, laneX + 11, (la.y + lb.y) / 2, THEME.yellow, 13.5, 'left', '700'); }
+    return { U: U };
+  }
+
+  /** ★ W 柱：金色柱高 = 倍率 × 落差（= W/Q0 的伏特当量），换 q 时变号变高、黄色量规不动 */
+  function drawWorkBar(ctx, S, s) {
+    if (S.sh * 80 < 22) { return null; }
+    var u0 = s.walkFrom, q = s.q, E = s.E, x0 = s.x0;
+    var U = P.uAB(u0, s.ball.x, E);
+    var W = q * P.Q0 * U;                       // 真正的功 (J)
+    var hv = clamp(q * U, -HMAX * 0.95, HMAX * 0.95);   // 柱高（伏特当量）
+    if (Math.abs(hv) < 1e-6) { hv = 0; }
+    var v = s.ball.y;
+    var col = (W >= 0) ? THEME.gold : THEME.gold;
+    var pb = S.main(s.ball.x, v, 0), pt = S.main(s.ball.x, v, hv);
+    ctx.save();
+    ctx.globalAlpha = 0.42; ctx.strokeStyle = col;
+    ctx.lineWidth = Math.max(9, clamp(S.S * 0.09, 9, 18));
+    ctx.beginPath(); ctx.moveTo(pb.x, pb.y); ctx.lineTo(pt.x, pt.y); ctx.stroke();
+    ctx.restore();
+    dot(ctx, pt, 4.5, THEME.gold);
+    text(ctx, 'W = ' + fmtJ(W), pt.x + 16, pt.y - 2, THEME.gold, 13, 'left', '700');
+    return { W: W, U: U };
+  }
+
+  /* ---------- 电荷（小球，永远贴在 φ 地形面上——φ 与 q 无关） ---------- */
+  function drawBall(ctx, S, s, pos, qOverride) {
+    var qq = (qOverride === undefined) ? s.q : qOverride;
+    var phi = P.phiAt(pos.x, s.x0, s.E);
+    var pg = S.main(pos.x, pos.y, phi);
+    var r = clamp(S.S * (0.042 + 0.030 * Math.abs(qq)), 6.5, 24);
+    ctx.save(); ctx.shadowColor = qq > 0 ? THEME.posLine : THEME.negLine; ctx.shadowBlur = 14;
+    dot(ctx, pg, r, qq > 0 ? THEME.posLine : THEME.negLine);
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = '#000000'; ctx.font = '700 ' + Math.round(r * 1.5) + 'px "WenQuanYi Zen Hei",sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(qq > 0 ? '+' : '−', pg.x, pg.y + 1);
+    ctx.restore();
+    return { phi: phi, pg: pg };
+  }
+
+  /* ---------- 路径 ---------- */
+  function pathPts(s) { return P.pathsFor(s.A, s.B, s.N); }
+  function pathOf(pts, key) {
+    if (key === 'poly') { return pts.polyline; }
+    if (key === 'curve') { return pts.curve; }
+    return pts.line;
+  }
+  function activePath(s) { return pathOf(pathPts(s), s.pathMode); }
+
+  /** 本步要走的“路”：A→B 三路径 / 过 A 的等势面 / 过 A 的假设面 */
+  function walkPath(s) {
+    if (s.show.assumed) { return P.assumedLine({ x: PIVOT_U, y: 0 }, s.theta, HALF); }
+    if (s.show.equiLine) { return [{ x: PIVOT_U, y: -HALF }, { x: PIVOT_U, y: HALF }]; }
+    return activePath(s);
+  }
+  function to3(S, s, pt) { return S.main(pt.x, pt.y, P.phiAt(pt.x, s.x0, s.E)); }
+  function drawPath3(ctx, S, s, pts, color, width, dash) {
+    ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width || 2.6;
+    if (dash) { ctx.setLineDash(dash); }
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (var i = 0; i < pts.length; i++) {
+      var p = to3(S, s, pts[i]);
+      if (i === 0) { ctx.moveTo(p.x, p.y); } else { ctx.lineTo(p.x, p.y); }
+    }
+    ctx.stroke(); ctx.restore();
+  }
+
+  /** ★ 反证法：假设的面（灰虚线，与电场线成 θ 角）+ 沿面场强分量 E∥ + 位移 */
+  function drawAssumedFace(ctx, S, s) {
+    var p0 = { x: PIVOT_U, y: 0 }, th = s.theta;
+    var line = P.assumedLine(p0, th, HALF);
+    // 主视图：沿假设面走 —— 这条路在爬坡/下坡（有高度变化 → 一定做功）
+    drawPath3(ctx, S, s, line, THEME.assumed, 2.6, [8, 5]);
+    // 真等势面（白细虚线）作对照：它才是平的
+    seg(ctx, S.main(PIVOT_U, -HALF, P.phiAt(PIVOT_U, s.x0, s.E)),
+           S.main(PIVOT_U, HALF, P.phiAt(PIVOT_U, s.x0, s.E)), 'rgba(255,255,255,0.45)', 1.4, [3, 4]);
+
+    // 俯视图：把场强 E 分解到假设面上
+    var a = S.strip(p0.x, p0.y), b = S.strip(p0.x + 0.9, p0.y);
+    arrow(ctx, a, b, 'rgba(255,255,255,0.85)', 2, 8);
+    text(ctx, 'E', b.x + 10, b.y - 10, THEME.ink, 13, 'center', '600');
+    var dirn = { du: Math.sin(th), dv: Math.cos(th) };
+    var len = 0.95 * Math.sin(th);                 // E∥ 的长度按 sinθ 缩
+    if (len > 0.02) {
+      var c = S.strip(p0.x + len * dirn.du, p0.y + len * dirn.dv);
+      arrow(ctx, a, c, THEME.assumed, 3.4, 9);
+      seg(ctx, b, c, 'rgba(136,136,136,0.6)', 1.4, [5, 4]);
+      text(ctx, 'E∥ = E·sinθ = ' + P.parComp(s.E, th).toFixed(0) + ' V/m',
+        c.x + 12, c.y + 14, THEME.assumed, 12.5, 'left', '600');
+    }
+    // 假设面本身（俯视图里的斜线）
+    var q1 = S.strip(p0.x - dirn.du * HALF, p0.y - dirn.dv * HALF);
+    var q2 = S.strip(p0.x + dirn.du * HALF, p0.y + dirn.dv * HALF);
+    seg(ctx, q1, q2, THEME.assumed, 2.2, [8, 5]);
+    text(ctx, '假设的面：不是等势面', q2.x + 8, q2.y - 10, THEME.assumed, 12.5, 'left');
+  }
+
+  /* ---------- 俯视图（物理空间） ---------- */
+  function drawPlatesAndField(ctx, S, s) {
+    var i, v;
+    var yTop = S.strip(0, V1 + 0.35).y, yBot = S.strip(0, V0 - 0.35).y;
+    var xL = S.strip(U0 - 0.18, 0).x, xR = S.strip(U1 + 0.18, 0).x;
+    ctx.save(); ctx.strokeStyle = THEME.posLine; ctx.lineWidth = 5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(xL, yTop); ctx.lineTo(xL, yBot); ctx.stroke(); ctx.restore();
+    text(ctx, '+', xL, yTop - 14, THEME.posLine, 18, 'center', '700');
+    ctx.save(); ctx.strokeStyle = THEME.negLine; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(xR, yTop); ctx.lineTo(xR, yBot); ctx.stroke(); ctx.restore();
+    text(ctx, '−', xR, yTop - 14, THEME.negLine, 18, 'center', '700');
+
+    for (i = 0; i <= 4; i++) {
+      v = lerp(V0, V1, i / 4);
+      var a = S.strip(U0 - 0.18, v), b = S.strip(U1 + 0.18, v);
+      seg(ctx, a, b, 'rgba(255,255,255,0.16)', 1.1);
+      var m1 = S.strip(U0 + (U1 - U0) * 0.30, v), m2 = S.strip(U0 + (U1 - U0) * 0.62, v);
+      arrow(ctx, m1, m2, 'rgba(255,255,255,0.38)', 1.3, 7);
+    }
+    text(ctx, 'E', xR + 16, yTop + 30, THEME.ink2, 14, 'center', '600');
+  }
+
+  /** 俯视图里的等势线（与电场线垂直的竖直白线） */
+  function drawStripContours(ctx, S, s) {
+    var k;
+    for (k = -6; k <= 6; k++) {
+      if (k === 0) { continue; }
+      var u = P.contourU(k, s.x0, s.E, P.DU);
+      if (u < U0 - 1e-6 || u > U1 + 1e-6) { continue; }
+      seg(ctx, S.strip(u, V0 - 0.35), S.strip(u, V1 + 0.35), THEME.contour, 1.4);
+    }
+    if (S.W >= 760) {
+      text(ctx, '竖直白线 = 等势线（⟂ 电场线）', S.W - 16, S.stripTop + 2, THEME.muted, 12, 'right');
+    }
+  }
+
+  function drawStripMarks(ctx, S, s) {
+    var list = s.show.marks || [];
+    var i;
+    for (i = 0; i < list.length; i++) {
+      var pt = s[list[i]];
+      if (!pt) { continue; }
+      var p = S.strip(pt.x, pt.y);
+      dot(ctx, p, 5, '#000000', THEME.ink);
+      text(ctx, list[i], p.x, p.y - 15, THEME.ink, 13, 'center', '700');
+    }
+    if (s.show.phiLabels && S.W >= 760) {
+      for (i = 0; i < list.length; i++) {
+        var q2 = s[list[i]];
+        if (!q2) { continue; }
+        var p2 = S.strip(q2.x, q2.y);
+        text(ctx, 'φ=' + P.phiAt(q2.x, s.x0, s.E).toFixed(0) + 'V', p2.x, p2.y + 16, THEME.muted, 11.5);
+      }
+    }
+  }
+
+  /** 俯视图里的“路” */
+  function drawStripWalk(ctx, S, s) {
+    var pts = walkPath(s);
+    ctx.save();
+    ctx.strokeStyle = s.show.assumed ? THEME.assumed : (s.show.equiLine ? THEME.ink : THEME.yellow);
+    ctx.lineWidth = 2.6;
+    if (s.show.assumed) { ctx.setLineDash([8, 5]); }
+    ctx.beginPath();
+    for (var j = 0; j < pts.length; j++) {
+      var p = S.strip(pts[j].x, pts[j].y);
+      if (j === 0) { ctx.moveTo(p.x, p.y); } else { ctx.lineTo(p.x, p.y); }
+    }
+    ctx.stroke(); ctx.restore();
+  }
+
+  function drawStripCharge(ctx, S, s, pos) {
+    var p = S.strip(pos.x, pos.y);
+    dot(ctx, p, 6.5, s.q > 0 ? THEME.posLine : THEME.negLine, '#000000');
+    text(ctx, s.q > 0 ? '+' : '−', p.x, p.y + 0.5, '#000000', 12, 'center', '700');
+    var f = P.force(s.q, s.E);
+    var len = clamp(Math.abs(f) * 0.006, 0.22, 0.7) * (f >= 0 ? 1 : -1);
+    var b = S.strip(pos.x + len, pos.y);
+    arrow(ctx, p, b, THEME.gold, 2.2, 8);
+    text(ctx, 'F', b.x + 9 * (f >= 0 ? 1 : -1), b.y - 10, THEME.gold, 13);
+  }
+
+  function drawStripZero(ctx, S, s) {
+    var a = S.strip(s.x0, V0 - 0.35), b = S.strip(s.x0, V1 + 0.35);
+    seg(ctx, a, b, THEME.zero, 2.4, [7, 5]);
+  }
+
+  /* ---------- 第 1 步：上楼情境（2D，铺满主视图） ---------- */
+  function drawFloorInset(ctx, S, s) {
+    var W = S.W, cx = W / 2, top = S.mainH * 0.14;
+    var bw = Math.min(220, W * 0.20), bh = Math.min(S.mainH * 0.60, 250);
+    function floors(x, f0, f1, tag, dim) {
+      var col = dim ? 'rgba(255,255,255,0.35)' : THEME.ink;
+      ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.6;
+      ctx.strokeRect(x - bw / 2, top, bw, bh); ctx.restore();
+      text(ctx, tag, x, top - 16, dim ? THEME.muted : THEME.ink, 13, 'center', '600');
+      for (var f = f0; f <= f1; f++) {
+        var y = top + bh - (f - f0 + 0.5) * (bh / (f1 - f0 + 1.2));
+        seg(ctx, { x: x - bw / 2, y: y }, { x: x + bw / 2, y: y }, col, 1.2);
+        text(ctx, f + 'F', x + bw / 2 + 12, y, THEME.muted, 11.5, 'left');
+      }
+      var yA = top + bh - (0.5) * (bh / (f1 - f0 + 1.2));
+      var yB = top + bh - (f1 - f0 + 0.5) * (bh / (f1 - f0 + 1.2));
+      dimArrow(ctx, { x: x + bw / 2 + 34, y: yA }, { x: x + bw / 2 + 34, y: yB },
+        dim ? 'rgba(255,255,255,0.4)' : THEME.yellow, 2);
+      text(ctx, (f1 - f0) + ' 层的高度差', x + bw / 2 + 42, (yA + yB) / 2,
+        dim ? THEME.muted : THEME.yellow, 12.5, 'left', '600');
+    }
+    floors(cx - W * 0.20, 6, 8, '六楼 → 八楼', false);
+    floors(cx + W * 0.20, 20, 22, '二十楼 → 二十二楼', true);
+    text(ctx, '做功取决于「两点的高度差」，不取决于楼有多高，也不取决于从哪一层出发',
+      cx, S.mainH - 42, THEME.ink2, 14, 'center', '500');
+    text(ctx, '—— 电场里，对应的是「两点之间的电势差」', cx, S.mainH - 18, THEME.yellow, 14.5, 'center', '700');
+  }
+
+  /* ---------- 第 20 步：两类电场的等势面（2D 并排） ---------- */
+  function drawTwoFields(ctx, S, s) {
+    var W = S.W, mainH = S.mainH, half = W / 2;
+    var titleY = mainH * 0.10;
+    var midY = mainH * 0.50;
+    var room = Math.max(70, Math.min(midY - titleY - 26, mainH * 0.34));   // 半幅可用高度
+    var cxA = half * 0.5, cxB = half * 1.5;
+    var i;
+
+    /* 左：匀强电场（平行板）—— 等势面是等间距的平面 */
+    text(ctx, '匀强电场（平行板）', cxA, titleY, THEME.ink, 14, 'center', '600');
+    var sc = room / 1.5;                                  // 极板半高 = room
+    var yTop = midY - room, yBot = midY + room;
+    ctx.save(); ctx.strokeStyle = THEME.posLine; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(cxA - sc * 1.5, yTop); ctx.lineTo(cxA - sc * 1.5, yBot); ctx.stroke();
+    ctx.strokeStyle = THEME.negLine;
+    ctx.beginPath(); ctx.moveTo(cxA + sc * 1.5, yTop); ctx.lineTo(cxA + sc * 1.5, yBot); ctx.stroke(); ctx.restore();
+    text(ctx, '+', cxA - sc * 1.5, yTop - 16, THEME.posLine, 18, 'center', '700');
+    text(ctx, '−', cxA + sc * 1.5, yTop - 16, THEME.negLine, 18, 'center', '700');
+    for (i = 0; i <= 4; i++) {
+      var yy = lerp(yTop + 6, yBot - 6, i / 4);
+      seg(ctx, { x: cxA - sc * 1.5, y: yy }, { x: cxA + sc * 1.5, y: yy }, 'rgba(255,255,255,0.16)', 1);
+      arrow(ctx, { x: cxA - sc * 0.5, y: yy }, { x: cxA + sc * 0.5, y: yy }, 'rgba(255,255,255,0.40)', 1.3, 7);
+    }
+    var d = P.equivGap(P.DU, 80);
+    for (i = -2; i <= 2; i++) {                           // 等间距的等势线
+      var xx = cxA + i * d * sc;
+      if (Math.abs(i * d * sc) > sc * 1.5 - 2) { continue; }
+      seg(ctx, { x: xx, y: yTop }, { x: xx, y: yBot }, THEME.contour, 1.6);
+    }
+    dimArrow(ctx, { x: cxA, y: yBot + 22 }, { x: cxA + d * sc, y: yBot + 22 }, THEME.yellow, 2);
+    text(ctx, 'd = ' + d.toFixed(2) + ' m（处处相等）', cxA + d * sc + 12, yBot + 22, THEME.yellow, 12.5, 'left', '600');
+    text(ctx, '相邻等势面 ΔU = 40 V', cxA, yBot + 50, THEME.ink2, 12.5, 'center');
+
+    /* 右：点电荷（同心球面的剖面）—— 越近越密 */
+    text(ctx, '点电荷（球面的剖面）', cxB, titleY, THEME.ink, 14, 'center', '600');
+    var radii = P.pointRadii(P.KQ, P.DU, 6);
+    var rMax = radii.length ? radii[radii.length - 1].r : P.R_MAX;
+    var sc2 = room / rMax;
+    for (i = 0; i < 12; i++) {
+      var an = i * Math.PI / 6;
+      seg(ctx, { x: cxB, y: midY }, { x: cxB + Math.cos(an) * room, y: midY - Math.sin(an) * room },
+        'rgba(255,255,255,0.16)', 1);
+      var r1 = rMax * 0.55, r2 = rMax * 0.94;
+      arrow(ctx, { x: cxB + Math.cos(an) * r1 * sc2, y: midY - Math.sin(an) * r1 * sc2 },
+                 { x: cxB + Math.cos(an) * r2 * sc2, y: midY - Math.sin(an) * r2 * sc2 },
+        'rgba(255,255,255,0.42)', 1.3, 7);
+    }
+    for (i = 0; i < radii.length; i++) {
+      ctx.save(); ctx.strokeStyle = THEME.contour; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(cxB, midY, radii[i].r * sc2, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+    }
+    dot(ctx, { x: cxB, y: midY }, 6, THEME.posLine);
+    var gaps = [];
+    for (i = 1; i < radii.length; i++) { gaps.push((radii[i].r - radii[i - 1].r).toFixed(2)); }
+    text(ctx, '间距 ' + gaps.join(' → ') + ' m（越远越疏）', cxB, yBot + 22, THEME.yellow, 12.5, 'center', '600');
+    text(ctx, '相邻等势面 ΔU = 40 V', cxB, yBot + 50, THEME.ink2, 12.5, 'center');
+    seg(ctx, { x: half, y: mainH * 0.06 }, { x: half, y: mainH - 10 }, 'rgba(255,255,255,0.10)', 1);
+
+    /* 探针电荷：沿等势面移动 → W = 0（哪一类电场都一样） */
+    var pr;
+    if (s.fieldMode === 'point') {
+      var rp = radii.length > 1 ? radii[1].r : rMax * 0.5;
+      var an2 = s.lineT * Math.PI * 2;
+      pr = { x: cxB + Math.cos(an2) * rp * sc2, y: midY - Math.sin(an2) * rp * sc2 };
+    } else {
+      pr = { x: cxA - d * sc, y: lerp(yTop + 12, yBot - 12, s.lineT) };
+    }
+    dot(ctx, pr, 7, s.q > 0 ? THEME.posLine : THEME.negLine, '#000000');
+    text(ctx, s.q > 0 ? '+' : '−', pr.x, pr.y + 0.5, '#000000', 12, 'center', '700');
+    var labY = pr.y - 24;
+    if (labY < titleY + 22) { labY = pr.y + 26; }
+    text(ctx, 'W = 0（沿等势面走）', pr.x, labY, THEME.gold, 12.5, 'center', '600');
+
+    text(ctx, '相邻等势面电势差都相等 → 面越密，单位距离上电势降得越快 → 场强越大',
+      W / 2, mainH - 14, THEME.ink, 13.5, 'center', '600');
+  }
+
+  /* ---------- 主入口 ---------- */
+  function render(cv, s, cam) {
+    var f = fitCanvas(cv), ctx = f.ctx, W = f.W, H = f.H;
+    var S = makeScene(W, H, cam);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = THEME.bg; ctx.fillRect(0, 0, W, H);
+    S.ctx = ctx;
+
+    /* ===== 主视图 ===== */
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, W, S.mainH); ctx.clip();
+
+    if (s.show.floor) {
+      drawFloorInset(ctx, S, s);
+    } else if (s.show.twoFields) {
+      drawTwoFields(ctx, S, s);
+    } else {
+      drawBasePlane(ctx, S);
+      drawHeightAxis(ctx, S);
+      drawSurface(ctx, S, s);
+      if (s.show.contours) { drawContours(ctx, S, s); }
+      if (s.show.assumed) { drawAssumedFace(ctx, S, s); }
+      else if (s.show.equiLine) { drawPath3(ctx, S, s, walkPath(s), THEME.ink, 2.6); }
+      if (s.show.walk) {
+        var pts = walkPath(s);
+        if (s.show.three) {
+          var p3 = pathPts(s);
+          drawPath3(ctx, S, s, p3.polyline, 'rgba(255,255,255,0.5)', 2.2, [8, 5]);
+          drawPath3(ctx, S, s, p3.curve, 'rgba(255,255,255,0.5)', 2.2);
+          drawPath3(ctx, S, s, p3.line, THEME.yellow, 3);
+        } else if (!s.show.equiLine && !s.show.assumed) {
+          drawPath3(ctx, S, s, pts, THEME.yellow, 3);
+        }
+      }
+      // A / B / C 标记（画在地形面上；坐标实时取自状态，拖动时跟着走）
+      var marks = s.show.marks || [];
+      for (var mi = 0; mi < marks.length; mi++) {
+        var mk = s[marks[mi]];
+        if (!mk) { continue; }
+        var mp = to3(S, s, mk);
+        dot(ctx, mp, 4.5, '#000000', THEME.ink);
+        text(ctx, marks[mi], mp.x + 11, mp.y - 12, THEME.ink, 13, 'center', '700');
+      }
+      if (s.show.walkBar) { drawWorkBar(ctx, S, s); }
+      drawZeroLine(ctx, S, s);
+      if (s.show.ball) { drawBall(ctx, S, s, s.ball); }
+    }
+    ctx.restore();
+
+    /* 量规画在主视图裁剪区之外：斜视时落在主视图里，俯视时退化到俯视图里，都不会被裁掉 */
+    if (!s.show.floor && !s.show.twoFields) {
+      var gNarrow = S.W < 760, parts = [], gs = [];
+      if (s.show.gaugeAB) { gs.push([{ u: s.A.x, v: s.A.y, lane: 0 }, { u: s.B.x, v: s.B.y }, s.dir]); }
+      if (s.show.gaugeBC) { gs.push([{ u: s.B.x, v: s.B.y, lane: -0.30 }, { u: s.C.x, v: s.C.y }, 'BC']); }
+      if (s.show.gaugeAC) { gs.push([{ u: s.A.x, v: s.A.y, lane: -0.60 }, { u: s.C.x, v: s.C.y }, 'AC']); }
+      for (var gi = 0; gi < gs.length; gi++) {
+        var uu = drawGaugePair(ctx, S, s, gs[gi][0], gs[gi][1], gs[gi][2], gNarrow);
+        parts.push('U_' + gs[gi][2] + ' = ' + (uu.U > 0 ? '+' : '') + uu.U.toFixed(0) + ' V');
+      }
+      if (gNarrow && parts.length) {
+        text(ctx, parts.join('　'), 12, S.mainH - 12, THEME.yellow, 12, 'left', '600');
+      }
+    }
+
+    /* 标题与图例 */
+    var narrowTop = W < 760;
+    if (!s.show.floor && !s.show.twoFields) {
+      text(ctx, narrowTop ? 'φ 地形面：面高 = 电势 φ' : 'φ 地形面：面高 = 电势 φ（只由 E 与零点决定，与试探电荷无关）',
+        16, 20, THEME.muted, 12.5, 'left');
+      if (!narrowTop) {                       // 窄屏不画图例与视角提示：话留给右栏和老师
+        text(ctx, '红 = φ>0　蓝 = φ<0｜白虚线 = 零电势面（可拖）｜黄 = 电势差 U｜金柱 = W = qU',
+          16, S.mainH - 14, 'rgba(136,136,136,0.95)', 12, 'left');
+        text(ctx, '拖动空白处旋转视角（右键 / Shift 拖动随时可转）· 滚轮缩放 · 双击复位',
+          W - 16, 20, 'rgba(136,136,136,0.9)', 12, 'right');
+      }
+      seg(ctx, { x: 0, y: S.mainH + 2 }, { x: W, y: S.mainH + 2 }, 'rgba(255,255,255,0.10)', 1);
+    }
+
+    /* ===== 下：俯视图 ===== */
+    if (!s.show.floor && !s.show.twoFields) {
+      text(ctx, W < 760 ? '俯视图 · 物理空间' : '俯视图 · 物理空间（沿场线方向 u，向右电势降低）',
+        16, S.stripTop + 2, THEME.muted, 12.5, 'left');
+      drawPlatesAndField(ctx, S, s);
+      if (s.show.contours) { drawStripContours(ctx, S, s); }
+      drawStripZero(ctx, S, s);
+      drawStripMarks(ctx, S, s);
+      if (s.show.walk || s.show.equiLine || s.show.assumed) { drawStripWalk(ctx, S, s); }
+      if (s.show.ball) { drawStripCharge(ctx, S, s, s.ball); }
+    }
+
+    return { S: S, ball: s.ball };
+  }
+
+  function screenToU(S, dx) { return dx / (S.su * S.ca); }
+
+  global.VizRender = {
+    THEME: THEME, U0: U0, U1: U1, V0: V0, V1: V1, X0MIN: X0MIN, X0MAX: X0MAX, HMAX: HMAX,
+    PIVOT_U: PIVOT_U, HALF: HALF,
+    render: render, fitCanvas: fitCanvas, makeScene: makeScene, screenToU: screenToU, uPerPixel: uPerPixel,
+    walkPath: walkPath, pathPts: pathPts, pathOf: pathOf, activePath: activePath, to3: to3,
+    ball: drawBall, seg: seg, text: text, dot: dot, arrow: arrow, dimArrow: dimArrow
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* =====================================================================
+   viz_pd_steps.js —— 21 步脚本（4 幕）
+     第一幕 · 相对与绝对（5 步）：上楼情境 → φ 随零点变 → 差不变 → 代数 → 类比边界
+     第二幕 · 定义与约定（4 步）：命名 → 反向 → 符号说方向 → 电压的约定
+     第三幕 · W＝qU 与例题四刀（7 步）：演绎链 → 走一遍 → 换 q → 判高低 → 算差值 → 换负电荷 → 画图
+     第四幕 · 等势面（5 步）：疏密 ↔ 场强 → 同一面不做功 → 反证法 → 两类电场 → 迁移与三句话
+
+   设计原则（同 10.1）：
+     · 每一步 = 一个纯状态；applyStep(i) 重建该步初态 → 前后翻页永远精确
+     · allow 是唯一交互开关，hint 说能拖的必须在 allow 里
+     · 每一步都能指回教案：环节①–⑦、认知障碍①–⑧、难点1–5、评价点 E1–E7
+   ===================================================================== */
+(function (global) {
+  'use strict';
+
+  var P = global.VizPhys, R = global.VizRender;
+
+  function lerp(a, b, t) { return a - (a - b) * t; }
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  /* 教材例题三点的标准坐标（E = 80 V/m、x₀ = 0 时正好给出 80 / −200 / −120 V） */
+  var EX_A = { x: 0.75, y: 0 }, EX_B = { x: 1.75, y: 0 }, EX_C = { x: -0.75, y: 0 };
+  /* 第一、二幕用的 A、B（错开 v，走路时能看见"横穿"那一段） */
+  var D_A = { x: 0.75, y: -0.7 }, D_B = { x: 1.75, y: 0.7 };
+  var TH_DEFAULT = 25 * Math.PI / 180;
+
+  /* ---------- 状态 ---------- */
+  function baseState() {
+    return {
+      step: 0,
+      A: { x: D_A.x, y: D_A.y },
+      B: { x: D_B.x, y: D_B.y },
+      C: { x: EX_C.x, y: EX_C.y },
+      q: 1,
+      E: P.E_FIELD,
+      x0: 0,
+      ball: { x: D_A.x, y: D_A.y },
+      t: 1, N: 16, pathMode: 'line',
+      theta: 0, lineT: 0.5,
+      dir: 'AB',
+      fieldMode: 'uniform',
+      walkFrom: D_A.x,
+      walkTarget: 'B',
+      show: {
+        floor: false, twoFields: false, contours: false, assumed: false, equiLine: false,
+        walk: false, walkBar: false, gaugeAB: false, gaugeBC: false, gaugeAC: false,
+        marks: [], phiLabels: false, ball: true, three: false, cmp: null
+      },
+      allow: {
+        ball: false, zero: false, A: false, B: false, C: false, t: false, N: false,
+        q: false, path: false, E: false, theta: false, dir: false, mode: false, line: false
+      },
+      note: '', formula: '', title: '', act: ''
+    };
+  }
+
+  /** 沿折线按比例取点（t ∈ [0,1]） */
+  function pointAt(pts, t) {
+    if (!pts || pts.length === 0) { return { x: 0, y: 0 }; }
+    if (pts.length === 1) { return { x: pts[0].x, y: pts[0].y }; }
+    var f = clamp(t, 0, 1) * (pts.length - 1);
+    var i = Math.min(pts.length - 2, Math.floor(f)), fr = f - i;
+    return { x: lerp(pts[i].x, pts[i + 1].x, fr), y: lerp(pts[i].y, pts[i + 1].y, fr) };
+  }
+
+  /* ---------- 画布叠加层（结论页） ---------- */
+  function scrim(ctx, S) {
+    ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.86)';
+    ctx.fillRect(0, 0, S.W, S.mainH); ctx.restore();
+  }
+  function txt(ctx, str, x, y, color, size, align, weight) {
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.font = (weight || '500') + ' ' + (size || 15) + 'px "Microsoft YaHei","PingFang SC","WenQuanYi Zen Hei",sans-serif';
+    ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(str, x, y); ctx.restore();
+  }
+  function chip(ctx, x, y, w, h) {
+    ctx.save();
+    ctx.strokeStyle = '#383838'; ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    var r = 10;
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+  /**
+   * 结论页：一页卡片
+   *   lead   顶部大字（黄色）
+   *   rows   [[左label, 右value, 颜色], ...]
+   *   foot   底部一句
+   */
+  function card(S, opt) {
+    var ctx = S.ctx, W = S.W, narrow = W < 760;
+    var rowH = narrow ? 38 : 46, padTop = narrow ? 52 : 64, padBot = opt.foot ? (narrow ? 40 : 46) : 12;
+    var h = padTop + opt.rows.length * rowH + padBot;
+    // 放不下主视图就改用整块画布（手机上结论页要盖住俯视图，不能压在上面）
+    var avail = (h + 44 <= S.mainH) ? S.mainH : S.H;
+    ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.88)'; ctx.fillRect(0, 0, W, avail); ctx.restore();
+    var bw = Math.min(880, W * (narrow ? 0.94 : 0.72));
+    var x = (W - bw) / 2;
+    var y = Math.max(18, (avail - h) / 2 - 6);
+    chip(ctx, x, y, bw, h);
+    txt(ctx, opt.lead, W / 2, y + padTop * 0.5, '#FFFF00', narrow ? 15 : 18, 'center', '700');
+    for (var i = 0; i < opt.rows.length; i++) {
+      var r = opt.rows[i];
+      var yy = y + padTop + i * rowH + rowH * 0.5;
+      txt(ctx, r[0], x + 20, yy, '#B0B0B0', narrow ? 12 : 14, 'left');
+      if (narrow) {                                  // 窄屏：右值缩到 12px，不挤
+        txt(ctx, r[1], x + bw - 20, yy, r[2] || '#FFFFFF', 12, 'right', '700');
+      } else {
+        txt(ctx, r[1], x + bw - 20, yy, r[2] || '#FFFFFF', 15.5, 'right', '700');
+      }
+    }
+    if (opt.foot) {
+      txt(ctx, opt.foot, W / 2, y + h - padBot * 0.6, '#83C167', narrow ? 11.5 : 14, 'center', '600');
+    }
+  }
+  function v(n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n).toFixed(0) + ' V'; }
+
+  /* ---------- 21 步 ---------- */
+  var ACT1 = '第一幕 · 相对与绝对', ACT2 = '第二幕 · 定义与约定',
+      ACT3 = '第三幕 · W = qU 与例题四刀', ACT4 = '第四幕 · 等势面';
+
+  var STEPS = [
+
+    /* ===== 第一幕 ===== */
+    {
+      act: ACT1, title: '上楼：累在“两层的高度差”',
+      hint: '纯情境页：先看“决定做功多少的是什么”',
+      note: '教材 P31 的问题栏：从 6 楼走到 8 楼，影响做功多少的是<b>这两层的高度差</b>，不是楼的高度。一楼到三楼、二十楼到二十二楼，累的程度一样。',
+      formula: 'W 取决于 Δh，不取决于 h',
+      allow: {}, show: { floor: true, ball: false }
+    },
+    {
+      act: ACT1, title: '平移到电场：同一个点，φ 居然能变',
+      hint: '拖 <b>白色虚线</b>（零电势面）—— 盯住 A、B 的 φ 读数',
+      note: '上节课说过：零电势点可以<b>任选</b>。选得不同，同一个点的电势数值就不同 —— <b>电势是相对的</b>。A 点的位置一动没动，读数却在变。',
+      formula: 'φA = E(x₀ − xA)',
+      allow: { zero: true },
+      show: { marks: ['A', 'B'], ball: false }
+    },
+    {
+      act: ACT1, title: '加上差值标尺：拖零点，差不变',
+      hint: '拖 <b>零电势面</b>：两根白柱一起平移，<b>黄色量规纹丝不动</b>',
+      note: '这就是本节的核心一屏：<b>电势是相对的，电势差是绝对的</b>。右栏里 φA、φB 跟着零点跳，U_AB 锁死不变。',
+      formula: 'U_AB = φA − φB（与零点无关）',
+      allow: { zero: true },
+      show: { marks: ['A', 'B'], gaugeAB: true, ball: false }
+    },
+    {
+      act: ACT1, title: '代数一次到位：同时减掉同一个数',
+      hint: '拖 <b>零电势面</b>继续验证',
+      note: '换个零点 = 两个电势同时减掉同一个数 φ₀，差当然不变。所以研究“两点之间”的问题，用差值就不必先约定零点。',
+      formula: '(φA − φ₀) − (φB − φ₀) = φA − φB',
+      allow: { zero: true },
+      show: { marks: ['A', 'B'], gaugeAB: true, ball: false },
+      overlay: function (ctx, W, H, S) {
+        card(S, {
+          lead: '两个数同时减掉同一个数 —— 差不变',
+          rows: [
+            ['零电势点移到 φ₀', 'φA→φA−φ₀，φB→φB−φ₀', '#B0B0B0'],
+            ['新的电势差', '(φA−φ₀) − (φB−φ₀)', '#FFFFFF'],
+            ['结果', '= φA − φB（原封不动）', '#FFFF00'],
+            ['结论', '电势相对，电势差绝对', '#FFFF00']
+          ],
+          foot: '教材原句：选择不同的位置作为零电势点……两点之间电势的差值却保持不变'
+        });
+      }
+    },
+    {
+      act: ACT1, title: '类比边界：只借“相对性”一件事',
+      hint: '拖 <b>场强 E</b>：A、B 位置一动没动，U 却变了',
+      note: '借“高度差”类比，<b>只借一件</b>：相对量与绝对量的关系。① 重力场里两点定了、高度差就定了；电场里 A、B 不动、E 一变 U 就变。② 顺着 W=mgh ↔ W=qU 往下对，会得出“电荷量像重力”这种荒唐对应。',
+      formula: 'U_AB = E·(xB − xA)：E 一变，U 就变',
+      allow: { E: true },
+      show: { marks: ['A', 'B'], gaugeAB: true, ball: false }
+    },
+
+    /* ===== 第二幕 ===== */
+    {
+      act: ACT2, title: '命名：U_AB = φA − φB',
+      hint: '拖俯视图里的 <b>A / B</b> 改位置，看黄色量规怎么变',
+      note: '两点之间电势的差值叫作<b>电势差</b>，也叫<b>电压</b>。写法约定：<b>先写起点、后写终点 = 起点电势减终点电势</b>。',
+      formula: 'U_AB = φA − φB',
+      allow: { A: true, B: true },
+      show: { marks: ['A', 'B'], gaugeAB: true, ball: false }
+    },
+    {
+      act: ACT2, title: '反过来：U_BA = −U_AB',
+      hint: '拖 <b>A / B</b>，或点 <b>U_AB / U_BA</b> 按钮换方向',
+      note: '同一对点，方向反了，电势差就差一个负号。<b>U_AB = −U_BA</b>，这一条记反，全节计算全反。',
+      formula: 'U_BA = φB − φA = −U_AB',
+      allow: { A: true, B: true, dir: true },
+      show: { marks: ['A', 'B'], gaugeAB: true, ball: false }
+    },
+    {
+      act: ACT2, title: '符号说方向：U_AB = −200 V 什么意思',
+      hint: '拖 <b>B</b> 让 U_AB 跨过 0 变号；点 <b>U_AB / U_BA</b> 换方向',
+      note: '位移 −5 m 是“反方向 5 m”；温度 −3 ℃ 是“比 0 ℃ 低 3 度”。所以 <b>U 的负号不是算错，是高低关系反过来了</b>。<b>符号不说大小，说方向（高低）。</b>此刻 U_AB = −200 V：B 比 A 高 200 V。',
+      formula: 'U_AB < 0 ⟺ B 比 A 高',
+      allow: { A: true, B: true, dir: true },
+      init: function (st) {
+        st.A = { x: EX_A.x, y: -0.7 };         // A 在 u=+0.75
+        st.B = { x: -1.75, y: 0.7 };           // B 在 u=−1.75 → U_AB = 80×(−2.5) = −200 V
+        st.ball = { x: st.A.x, y: st.A.y };
+      },
+      show: { marks: ['A', 'B'], gaugeAB: true, ball: false }
+    },
+    {
+      act: ACT2, title: '电压的约定（静电场前提下）',
+      hint: '纯结论页',
+      note: '电池标 1.5 V，从来不说 −1.5 V —— <b>很多场合电压不带正负号</b>；但题目问“哪点电势高”时，必须带符号。只存在静电场时，空间任一点有电势、两点间有电势差，这才是“电压 = 电势差”的边界。',
+      formula: 'U_AC = −120 V → 电压 120 V，A 比 C 低 120 V',
+      allow: {},
+      init: function (st) {
+        st.A = { x: 0.75, y: -0.7 }; st.C = { x: -0.75, y: 0.7 };
+        st.ball = { x: st.A.x, y: st.A.y };
+      },
+      show: {
+        marks: ['A', 'C'],
+        gaugeAC: true, ball: false
+      },
+      overlay: function (ctx, W, H, S) {
+        card(S, {
+          lead: '三个读数的读法',
+          rows: [
+            ['U_AB = 80 V', 'A 比 B 高 80 V', '#FFFF00'],
+            ['U_AB = −200 V', 'B 比 A 高 200 V（不是“负得更多”）', '#FFFF00'],
+            ['电池标 1.5 V', '日常说“电压”，不带正负号', '#FFFFFF'],
+            ['问“哪点高”时', '必须带符号 —— 符号说方向', '#FFFFFF']
+          ]
+        });
+      }
+    },
+
+    /* ===== 第三幕 ===== */
+    {
+      act: ACT3, title: '只用两条旧知，自己把 U 和 W 连起来',
+      hint: '纯结论页：看四步演绎链',
+      note: '只有两条旧知：① 静电力做的功 = 电势能的减少量 <b>W_AB = EpA − EpB</b>；② 电势的定义式 <b>Ep = qφ</b>。四步演下来就得到 U_AB = W_AB/q —— 这个方法叫<b>演绎推理法</b>。通分那一步不能省：研究能量的<b>变化</b>，比研究某种能量更有实际意义。',
+      formula: 'U_AB = φA − φB → (EpA − EpB)/q → W_AB/q',
+      allow: {},
+      init: function (st) {
+        st.A = { x: D_A.x, y: D_A.y }; st.B = { x: D_B.x, y: D_B.y };
+        st.ball = { x: st.A.x, y: st.A.y };
+      },
+      show: { marks: ['A', 'B'], gaugeAB: true, ball: false },
+      overlay: function (ctx, W, H, S) {
+        card(S, {
+          lead: 'U_AB = W_AB/q 是“第三个比值定义”',
+          rows: [
+            ['① 关系式', 'W_AB = EpA − EpB = qU_AB', '#83C167'],
+            ['② 用 φ = Ep/q 代换', 'U_AB = (EpA − EpB)/q', '#83C167'],
+            ['③ 用功能关系替换分子', 'U_AB = W_AB/q', '#FFFF00'],
+            ['④ 与 E=F/q、φ=Ep/q 并列', '都与试探量 q 无关', '#FFFF00']
+          ],
+          foot: '关系式说“怎么算”，定义式说“它是什么”——两者并不独立，可以互推'
+        });
+      }
+    },
+    {
+      act: ACT3, title: '走一遍就兑现：W 与路径无关',
+      hint: '拖<b>电荷</b>沿路径走（或拖「走到哪儿」滑杆）；点 <b>直线 / 折线 / 曲线</b> 换一条路',
+      note: '不管走哪条路，静电力做的功都一样 = qU_AB。这就是教材那句：知道了两点的电势差，计算做功<b>不必考虑静电力和电荷移动的路径</b>。变力、弯路也只能用它算。',
+      formula: 'W_AB = qU_AB = qE(xB − xA)',
+      allow: { ball: true, t: true, path: true },
+      init: function (st) {
+        st.A = { x: D_A.x, y: D_A.y }; st.B = { x: D_B.x, y: D_B.y };
+        st.walkFrom = st.A.x; st.walkTarget = 'B'; st.t = 1;
+        st.ball = { x: st.B.x, y: st.B.y };
+      },
+      show: {
+        marks: ['A', 'B'],
+        gaugeAB: true, walk: true, walkBar: true, cmp: 'paths'
+      }
+    },
+    {
+      act: ACT3, title: '换 q：W 变号变大小，U 不动',
+      hint: '点 <b>q 档位</b>按钮（+2q₀ / +q₀ / −q₀ / −2q₀）看金色 W 柱；再拖电荷或「走到哪儿」走一遍，也可换 <b>直线 / 折线 / 曲线</b>',
+      note: '<b>黄色量规是电场的事</b>（与放什么电荷无关）；<b>金色 W 柱是电荷的事</b>：q 变号，W 就变号。同一个 U，正负电荷做功一正一负。',
+      formula: 'W = qU_AB（q 含符号）',
+      allow: { ball: true, t: true, q: true, path: true },
+      init: function (st) {
+        st.A = { x: D_A.x, y: D_A.y }; st.B = { x: D_B.x, y: D_B.y };
+        st.walkFrom = st.A.x; st.walkTarget = 'B'; st.q = 1; st.t = 1;
+        st.ball = { x: st.B.x, y: st.B.y };
+      },
+      show: {
+        marks: ['A', 'B'],
+        gaugeAB: true, walk: true, walkBar: true, cmp: 'WU'
+      }
+    },
+    {
+      act: ACT3, title: '例题·第一刀：哪点电势最高？',
+      hint: '纯结论页',
+      note: '教材例题：q = 2.0×10⁻⁹ C，A→B 静电力做功 +1.6×10⁻⁷ J，B→C 做功 −4.0×10⁻⁷ J。<b>由做功正负直接判高低</b>：A→B 正功 → A 比 B 高；B→C 负功 → C 比 B 高；再比绝对值（80 V < 200 V）→ <b>C 最高、A 次之、B 最低</b>。',
+      formula: 'W > 0 ⇒ 起点电势高',
+      allow: {},
+      init: setExample,
+      show: { marks: ['C', 'A', 'B'], gaugeAB: true, gaugeBC: true, ball: false },
+      overlay: function (ctx, W, H, S) {
+        card(S, {
+          lead: '第一刀：由做功正负判高低',
+          rows: [
+            ['A→B 做正功 +1.6×10⁻⁷ J', 'A 比 B 高', '#FFFF00'],
+            ['B→C 做负功 −4.0×10⁻⁷ J', 'C 比 B 高', '#FFFF00'],
+            ['比绝对值：80 V < 200 V', '所以 C 比 A 还高', '#FFFFFF'],
+            ['排序', 'C 最高 → A 次之 → B 最低', '#FFFF00']
+          ],
+          foot: '判断顺序：先看受力方向与移动方向定做功正负，再由 W = qU 定 U 的正负'
+        });
+      }
+    },
+    {
+      act: ACT3, title: '例题·第二刀：算差值（含可加性）',
+      hint: '纯结论页：看三段标尺首尾相接',
+      note: 'U_AB = W_AB/q = +80 V；U_BC = W_BC/q = −200 V；U_AC = U_AB + U_BC = −120 V。因为 φA − φC = (φA − φB) + (φB − φC)，<b>中间项抵消</b> —— 电势差可以相加，这正是“串联电路总电压 = 各部分电压之和”的来头。',
+      formula: 'U_AC = U_AB + U_BC',
+      allow: {},
+      init: setExample,
+      show: { marks: ['C', 'A', 'B'], gaugeAB: true, gaugeBC: true, gaugeAC: true, ball: false }
+    },
+    {
+      act: ACT3, title: '例题·第三刀：换负电荷',
+      hint: '点 <b>教材 q′</b> 按钮（−1.5×10⁻⁹ C），看金色 W 柱',
+      note: '同一个 U_AC = −120 V，换负电荷做功<b>变正</b>：W_AC = q′U_AC = (−1.5×10⁻⁹ C) × (−120 V) = <b>+1.8×10⁻⁷ J</b>。追问一句：为什么变正？—— q 变号了。',
+      formula: 'W_AC = q′U_AC = +1.8×10⁻⁷ J',
+      allow: { q: true, ball: true },
+      init: function (st) {
+        setExample(st);
+        st.q = P.Q_EXAMPLE; st.walkFrom = st.A.x; st.walkTarget = 'C'; st.t = 1;
+        st.ball = { x: st.C.x, y: st.C.y };
+      },
+      show: { marks: ['C', 'A', 'B'], gaugeAC: true, walk: true, walkBar: true }
+    },
+    {
+      act: ACT3, title: '例题·第四刀：画出电场分布图',
+      hint: '切「俯视」视角，对照下面的俯视图看 A、B、C 的位置',
+      note: 'A、B、C 在<b>同一条电场线上</b>。电场线由高等势面指向低等势面 —— C 高、B 低，所以电场线由 C 侧指向 B 侧，且沿电场线方向电势逐渐降低。',
+      formula: 'E 的方向：由高等势面 → 低等势面',
+      allow: {},
+      init: setExample,
+      show: { marks: ['C', 'A', 'B'], gaugeAB: true, phiLabels: true, contours: true, ball: false }
+    },
+
+    /* ===== 第四幕 ===== */
+    {
+      act: ACT4, title: '等高线 ↔ 等势面：密处场强大',
+      hint: '拖 <b>场强 E</b>：等势面的间距 d = ΔU/E 跟着变',
+      note: '地图上等高线密处陡；电场里<b>等势面密处场强大</b>。相邻等势面的电势差都相等（都差 40 V），所以面越密，单位距离上电势降得越快。注意方向别记反：是“越密场强越大”，不是“间距越大场强越大”。',
+      formula: 'd = ΔU / E',
+      allow: { E: true },
+      init: function (st) {
+        st.A = { x: D_A.x, y: D_A.y }; st.ball = { x: D_A.x, y: D_A.y };
+      },
+      show: { marks: ['A'], contours: true, ball: false }
+    },
+    {
+      act: ACT4, title: '同一等势面上移动：静电力不做功',
+      hint: '拖<b>电荷</b>沿这条等势面走（或拖「沿面位置」滑杆）—— 金色柱一直贴零',
+      note: '为什么不做功？—— W_AB = EpA − EpB，同一个面上 φ 相同 → 电势能不变 → 不做功。这不是背下来的，是从上节课的结论<b>挣来的</b>。（同一等势面上“不做功”≠“电势能不变”，那是两道题的区别，见作业辨析题。）',
+      formula: '同一等势面上 W = 0（Δu = 0）',
+      allow: { ball: true, line: true },
+      init: function (st) {
+        st.A = { x: R.PIVOT_U, y: 0 }; st.walkFrom = R.PIVOT_U;
+        st.lineT = 0; st.ball = { x: R.PIVOT_U, y: -R.HALF };
+      },
+      show: { marks: ['A'], contours: true, equiLine: true, walk: true, walkBar: true }
+    },
+    {
+      act: ACT4, title: '反证法：把面斜过来，就非做功不可',
+      hint: '拖 <b>倾角 θ</b>：面一斜就出现沿面的场强分量 E∥；再拖「沿面位置」或沿面的<b>电荷</b>走一段',
+      note: '教材原文：<b>假如不垂直，电场强度就有一个沿着等势面的分量，在等势面上移动电荷时静电力就要做功 —— 这与这个面是等势面矛盾</b>，所以等势面一定跟电场线垂直。θ = 0 时 W = 0，那才是真的等势面；θ≠0 的灰面<b>根本不是等势面</b>。',
+      formula: 'E∥ = E·sinθ，W = qE·s·sinθ',
+      allow: { theta: true, ball: true, line: true },
+      init: function (st) {
+        st.A = { x: R.PIVOT_U, y: 0 }; st.walkFrom = R.PIVOT_U;
+        st.theta = TH_DEFAULT; st.lineT = 0.86;
+        st.ball = { x: R.PIVOT_U, y: 0 };
+      },
+      show: { marks: ['A'], contours: true, assumed: true, walk: true, walkBar: true }
+    },
+    {
+      act: ACT4, title: '两类电场：匀强 vs 点电荷',
+      hint: '点 <b>匀强 / 点电荷</b> 换一侧；拖「沿面位置」滑杆，让电荷沿等势面走 —— W 都是 0',
+      note: '教材图 10.2-3 的两幅图：平行板电场的等势面是<b>等间距</b>的平面；点电荷电场的等势面是<b>同心球面</b>（画在纸上就是它的剖面），越靠近电荷越密 → 场强越大。两边的相邻等势面电势差都是 40 V。',
+      formula: '匀强：d = ΔU/E 处处相等｜点电荷：φ = kQ/r',
+      allow: { mode: true, line: true },
+      init: function (st) { st.fieldMode = 'uniform'; st.lineT = 0.3; },
+      show: { twoFields: true, ball: false }
+    },
+    {
+      act: ACT4, title: '迁移 + 三句话带走',
+      hint: '纯结论页',
+      note: '反证法四步做成可迁移的模板：<b>①假设反面 → ②推出矛盾 → ③否定假设 → ④结论成立</b>。当堂迁移：两个电势不同的等势面不能相交（若相交，交点电势就不唯一，与定义矛盾）。',
+      formula: '① 假设 ② 矛盾 ③ 否定 ④ 结论',
+      allow: {},
+      init: function (st) { st.ball = { x: 0, y: 0 }; },
+      show: { ball: false },
+      overlay: function (ctx, W, H, S) {
+        card(S, {
+          lead: '三句话带走',
+          rows: [
+            ['① 电势是相对的，电势差是绝对的', '换零点：φ 变，U 不变', '#FFFF00'],
+            ['② W_AB = qU_AB', '不看路径、不看场强（变力也行）', '#FFFF00'],
+            ['③ 等势面 ⟂ 电场线', '由高等势面指向低等势面', '#FFFF00'],
+            ['④ 反证法四步', '假设反面 → 矛盾 → 否定 → 结论', '#83C167']
+          ],
+          foot: '下节课：U 与 E 的定量关系 U = Ed —— 等势面的疏密要变成算式了'
+        });
+      }
+    }
+  ];
+
+  function setExample(st) {
+    st.A = { x: EX_A.x, y: EX_A.y };
+    st.B = { x: EX_B.x, y: EX_B.y };
+    st.C = { x: EX_C.x, y: EX_C.y };
+    st.q = 2;                       // 教材例题 q = 2.0×10⁻⁹ C
+    st.walkFrom = st.A.x; st.walkTarget = 'B'; st.t = 1;
+    st.ball = { x: st.A.x, y: st.A.y };
+  }
+
+  /* ---------- 应用一个步骤（纯函数式重建） ---------- */
+  function apply(st, i) {
+    i = clamp(i, 0, STEPS.length - 1);
+    var fresh = baseState();
+    for (var k in fresh) { st[k] = fresh[k]; }
+    var def = STEPS[i];
+    st.step = i;
+    st.act = def.act; st.title = def.title; st.hint = def.hint || '';
+    st.note = def.note || ''; st.formula = def.formula || '';
+    st.allow = {};
+    var a;
+    for (a in (def.allow || {})) { st.allow[a] = true; }
+    if (def.init) { def.init(st); }
+    for (a in (def.show || {})) { st.show[a] = def.show[a]; }
+    // 电荷位置：沿路走的步骤由 lineT / t 决定
+    if (st.show.equiLine || st.show.assumed || st.allow.t) {
+      var pts = R.walkPath(st);
+      var tt = st.show.equiLine || st.show.assumed ? st.lineT : st.t;
+      st.ball = pointAt(pts, tt);
+    }
+    st.ball.x = clamp(st.ball.x, R.U0, R.U1);
+    st.ball.y = clamp(st.ball.y, R.V0, R.V1);
+    return st;
+  }
+
+  global.VizSteps = { STEPS: STEPS, apply: apply, baseState: baseState, pointAt: pointAt };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* =====================================================================
+   viz_pd_app.js —— 交互层：翻页 / 拖动 / 滑块 / 读数 / 自检接口
+   翻页用 VizSteps.apply() 纯重建，所以“上一步”永远精确复原。
+   ===================================================================== */
+(function () {
+  'use strict';
+  var P = window.VizPhys, R = window.VizRender, St = window.VizSteps;
+
+  var cv = document.getElementById('cv');
+  var st = St.baseState();
+  var S = null;          // 上一帧的场景几何（用于命中测试）
+  var drag = null;
+  var cam = { az: 0.38, el: 0.45, zoom: 1 };
+  var VIEWS = {
+    oblique: { az: 0.38, el: 0.45, zoom: 1 },
+    top: { az: 0.0, el: 1.40, zoom: 1 },
+    side: { az: 0.0, el: 0.12, zoom: 1.05 },
+    reset: { az: 0.38, el: 0.45, zoom: 1 }
+  };
+  function setView(name) {
+    var v = VIEWS[name] || VIEWS.reset;
+    cam.az = v.az; cam.el = v.el; cam.zoom = v.zoom;
+    var btns = document.querySelectorAll('#wrapView button');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].className = (btns[i].getAttribute('data-view') === name) ? 'on' : '';
+    }
+    draw();
+  }
+
+  function $(id) { return document.getElementById(id); }
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  /** 电压：+80 V / −200 V */
+  function vfmt(v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(0) + ' V'; }
+  /** 电荷量倍率 → +1.0×10⁻⁹ C */
+  function qText(mul) {
+    return (mul > 0 ? '+' : '−') + Math.abs(mul).toFixed(1) + '×10⁻⁹ C';
+  }
+  /** 功：教材量级 10⁻⁷ J */
+  function jText(W) {
+    if (Math.abs(W) < 1e-18) { return '0 J'; }
+    var m = W / 1e-7;
+    return (m > 0 ? '+' : '−') + Math.abs(m).toFixed(2) + '×10⁻⁷ J';
+  }
+
+  /* ================= 渲染 ================= */
+  function draw() {
+    var r = R.render(cv, st, cam);
+    S = r.S;
+    var def = St.STEPS[st.step];
+    if (def && def.overlay) { def.overlay(S.ctx, S.W, S.H, S, st); }
+    updatePanel();
+    updateControls();
+    markToc();
+  }
+
+  /* ================= 读数面板 ================= */
+  function panelW() {
+    if (st.show.walkBar) { return st.q * P.Q0 * P.uAB(st.walkFrom, st.ball.x, st.E); }
+    if (st.show.gaugeAB) { return st.q * P.Q0 * P.uAB(st.A.x, st.B.x, st.E); }
+    if (st.show.gaugeAC) { return st.q * P.Q0 * P.uAB(st.A.x, st.C.x, st.E); }
+    return null;
+  }
+
+  function updatePanel() {
+    var E = st.E, x0 = st.x0;
+    var phiA = P.phiAt(st.A.x, x0, E), phiB = P.phiAt(st.B.x, x0, E);
+    var UAB = P.uAB(st.A.x, st.B.x, E);
+
+    $('rdUAB').textContent = vfmt(UAB);
+    $('rdUBA').textContent = vfmt(-UAB);
+    $('rdPhi').textContent = vfmt(phiA) + ' / ' + vfmt(phiB);
+    var W = panelW();
+    $('rdW').textContent = (W === null) ? '—' : jText(W);
+    $('rdQ').textContent = qText(st.q);
+    $('rdE').textContent = E.toFixed(0) + ' V/m';
+    $('rdX0').textContent = (x0 > 0 ? '+' : x0 < 0 ? '−' : '') + Math.abs(x0).toFixed(2) + ' m';
+    $('rdD').textContent = P.equivGap(P.DU, E).toFixed(2) + ' m';
+    $('rdPar').textContent = P.parComp(E, st.theta).toFixed(1) + ' V/m';
+    $('rdFormula').innerHTML = st.formula || '—';
+    $('rdNote').innerHTML = st.note || '—';
+
+    var box = $('cmpBox');
+    var mode = st.show.cmp;
+    if (!mode) { if (box) { box.classList.add('hidden'); } return; }
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'cmpBox';
+      var aside = document.querySelector('aside');
+      aside.insertBefore(box, aside.querySelector('h3'));
+    }
+    box.classList.remove('hidden');
+    box.innerHTML = buildCmp(mode);
+  }
+
+  function barRow(name, val, pct, color, txt) {
+    return '<div style="display:flex;align-items:center;gap:7px;margin:5px 0;font-size:12.5px">' +
+      '<span style="width:56px;color:#B0B0B0">' + name + '</span>' +
+      '<span style="flex:1;height:9px;background:#141414;border-radius:5px;overflow:hidden">' +
+      '<i style="display:block;height:100%;width:' + clamp(pct, 0, 100).toFixed(1) + '%;background:' + color + '"></i></span>' +
+      '<b style="min-width:78px;text-align:right;color:' + color + ';font-variant-numeric:tabular-nums">' + txt + '</b>' +
+      '</div>';
+  }
+
+  function buildCmp(mode) {
+    var html = '';
+    if (mode === 'paths') {
+      var pts = R.pathPts(st), keys = [['line', '直线'], ['poly', '折线'], ['curve', '曲线']];
+      var vals = keys.map(function (k) { return P.accumulate(R.pathOf(pts, k[0]), st.q * P.Q0, st.E).W; });
+      var mx = Math.max.apply(null, vals.map(Math.abs)) || 1e-30;
+      html += '<h3>三条路径：静电力做的功</h3>';
+      html += '<div style="font-size:12px;color:#888888;margin:-2px 0 6px">W = qU_AB，三条完全一样</div>';
+      for (var i = 0; i < keys.length; i++) {
+        html += barRow(keys[i][1], vals[i], Math.abs(vals[i]) / mx * 100, R.THEME.yellow, jText(vals[i]));
+      }
+      return html;
+    }
+    if (mode === 'WU') {
+      var U = P.uAB(st.A.x, st.B.x, st.E);
+      var q = st.q * P.Q0;
+      html += '<h3>U 是电场的事，W 是电荷的事</h3>';
+      html += barRow('U_AB', U, 100, R.THEME.yellow, vfmt(U));
+      html += barRow('W(+q)', q * U, Math.abs(q * U) / (Math.abs(q * U) || 1e-30) * 100, R.THEME.gold, jText(q * U));
+      html += barRow('W(−q)', -q * U, 100, R.THEME.gold, jText(-q * U));
+      html += '<div style="font-size:12px;color:#888888;margin-top:4px">同一个 U：正负电荷做功一正一负 —— 黄色量规不动，金色 W 换号</div>';
+      return html;
+    }
+    return html;
+  }
+
+  /* ================= 控件状态 ================= */
+  function show(el, on) { if (el) { el.classList[on ? 'remove' : 'add']('hidden'); } }
+  function updateControls() {
+    var a = st.allow;
+    show($('wrapT'), !!a.t);
+    show($('wrapLine'), !!a.line);
+    show($('wrapE'), !!a.E);
+    show($('wrapTheta'), !!a.theta);
+    show($('wrapPath'), !!a.path);
+    show($('wrapQ'), !!a.q);
+    show($('wrapDir'), !!a.dir);
+    show($('wrapMode'), !!a.mode);
+
+    $('stepTitle').textContent = st.title;
+    $('actTag').textContent = st.act;
+    $('stepSn').textContent = (st.step + 1) + ' / ' + St.STEPS.length;
+    $('hint').innerHTML = st.hint || '';
+    $('prog').firstElementChild.style.width = ((st.step + 1) / St.STEPS.length * 100) + '%';
+
+    $('rgT').value = Math.round(st.t * 100); $('lbT').textContent = Math.round(st.t * 100) + '%';
+    $('rgLine').value = Math.round(st.lineT * 100); $('lbLine').textContent = Math.round(st.lineT * 100) + '%';
+    $('rgE').value = st.E; $('lbE').textContent = st.E.toFixed(0);
+    var deg = Math.round(st.theta * 180 / Math.PI);
+    $('rgTheta').value = deg; $('lbTheta').textContent = deg + '°';
+
+    var pb = document.querySelectorAll('#wrapPath button');
+    for (var i = 0; i < pb.length; i++) {
+      pb[i].className = (pb[i].getAttribute('data-path') === st.pathMode) ? 'on' : '';
+    }
+    var qb = document.querySelectorAll('#wrapQ button');
+    for (i = 0; i < qb.length; i++) {
+      qb[i].className = (Math.abs(parseFloat(qb[i].getAttribute('data-q')) - st.q) < 1e-9) ? 'on' : '';
+    }
+    var db = document.querySelectorAll('#wrapDir button');
+    for (i = 0; i < db.length; i++) {
+      db[i].className = (db[i].getAttribute('data-dir') === st.dir) ? 'on' : '';
+    }
+    var mb = document.querySelectorAll('#wrapMode button');
+    for (i = 0; i < mb.length; i++) {
+      mb[i].className = (mb[i].getAttribute('data-mode') === st.fieldMode) ? 'on' : '';
+    }
+  }
+
+  /* ================= 翻页 ================= */
+  function go(i) { St.apply(st, i); draw(); }
+  function next() { go(st.step + 1); }
+  function prev() { go(st.step - 1); }
+  function resetStep() { go(st.step); }
+
+  $('btnNext').addEventListener('click', next);
+  $('btnPrev').addEventListener('click', prev);
+  $('btnReset').addEventListener('click', resetStep);
+
+  $('prog').addEventListener('click', function (ev) {
+    var r = this.getBoundingClientRect();
+    var f = clamp((ev.clientX - r.left) / r.width, 0, 0.999);
+    go(Math.floor(f * St.STEPS.length));
+  });
+  (function ticks() {
+    var bar = $('prog');
+    for (var i = 1; i < St.STEPS.length; i++) {
+      var u = document.createElement('u');
+      u.style.left = (i / St.STEPS.length * 100) + '%';
+      bar.appendChild(u);
+    }
+  })();
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'ArrowRight' || ev.key === 'PageDown' || ev.key === ' ') { next(); ev.preventDefault(); }
+    else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') { prev(); ev.preventDefault(); }
+    else if (ev.key === 'Home') { go(0); ev.preventDefault(); }
+  });
+
+  /* ================= 滑块与按钮 ================= */
+  $('rgT').addEventListener('input', function () {
+    st.t = parseFloat(this.value) / 100;
+    st.ball = St.pointAt(R.walkPath(st), st.t);
+    draw();
+  });
+  $('rgLine').addEventListener('input', function () {
+    st.lineT = parseFloat(this.value) / 100;
+    st.ball = St.pointAt(R.walkPath(st), st.lineT);
+    draw();
+  });
+  $('rgE').addEventListener('input', function () {
+    st.E = parseFloat(this.value);
+    draw();
+  });
+  $('rgTheta').addEventListener('input', function () {
+    st.theta = parseFloat(this.value) * Math.PI / 180;
+    st.ball = St.pointAt(R.walkPath(st), st.lineT);
+    draw();
+  });
+  (function () {
+    var pb = document.querySelectorAll('#wrapPath button');
+    for (var i = 0; i < pb.length; i++) {
+      pb[i].addEventListener('click', function () {
+        st.pathMode = this.getAttribute('data-path');
+        if (st.allow.t) { st.ball = St.pointAt(R.walkPath(st), st.t); }
+        draw();
+      });
+    }
+    var qb = document.querySelectorAll('#wrapQ button');
+    for (i = 0; i < qb.length; i++) {
+      qb[i].addEventListener('click', function () {
+        st.q = parseFloat(this.getAttribute('data-q'));
+        draw();
+      });
+    }
+    var db = document.querySelectorAll('#wrapDir button');
+    for (i = 0; i < db.length; i++) {
+      db[i].addEventListener('click', function () {
+        st.dir = this.getAttribute('data-dir');
+        draw();
+      });
+    }
+    var mb = document.querySelectorAll('#wrapMode button');
+    for (i = 0; i < mb.length; i++) {
+      mb[i].addEventListener('click', function () {
+        st.fieldMode = this.getAttribute('data-mode');
+        draw();
+      });
+    }
+  })();
+
+  /* ================= 拖动 ================= */
+  /** 屏幕上离鼠标最近的路点对应的进度（沿路径拖动电荷用） */
+  function pathTAt(S, px, py) {
+    var pts = R.walkPath(st), bestT = 0, bestD = Infinity;
+    for (var i = 0; i <= 120; i++) {
+      var t = i / 120, w = St.pointAt(pts, t);
+      var sc = S.main(w.x, w.y, P.phiAt(w.x, st.x0, st.E));
+      var d = (sc.x - px) * (sc.x - px) + (sc.y - py) * (sc.y - py);
+      if (d < bestD) { bestD = d; bestT = t; }
+    }
+    return bestT;
+  }
+
+  function evPos(ev) {
+    var r = cv.getBoundingClientRect();
+    var t = ev.touches ? ev.touches[0] : ev;
+    return { x: t.clientX - r.left, y: t.clientY - r.top };
+  }
+  function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+  function segDist(p, a, b) {
+    var vx = b.x - a.x, vy = b.y - a.y, wx = p.x - a.x, wy = p.y - a.y;
+    var L2 = vx * vx + vy * vy;
+    var t = L2 > 0 ? clamp((wx * vx + wy * vy) / L2, 0, 1) : 0;
+    return Math.hypot(p.x - (a.x + t * vx), p.y - (a.y + t * vy));
+  }
+
+  function hit(p) {
+    if (!S) { return null; }
+    var ballScr = S.main(st.ball.x, st.ball.y, P.phiAt(st.ball.x, st.x0, st.E));
+    if (st.allow.ball && dist(p, ballScr) < 34) { return 'ball'; }
+    if (st.allow.zero) {
+      var z0 = S.main(st.x0, -1.2, 0), z1 = S.main(st.x0, 1.2, 0);
+      if (segDist(p, z0, z1) < 15) { return 'zero'; }
+    }
+    var marks = st.show.marks || [];
+    for (var i = 0; i < marks.length; i++) {
+      var m = st[marks[i]];
+      if (m && st.allow[marks[i]] && dist(p, S.strip(m.x, m.y)) < 22) { return marks[i]; }
+    }
+    return null;
+  }
+
+  function onDown(ev) {
+    var p = evPos(ev);
+    var forceOrbit = (ev.button === 2) || (ev.button === 1) || ev.shiftKey || ev.altKey || ev.metaKey;
+    var mode = forceOrbit ? null : hit(p);
+    if (!mode && S && p.y < S.mainH) { mode = 'orbit'; }
+    if (!mode) { return; }
+    drag = { mode: mode, last: p };
+    cv.style.cursor = (mode === 'orbit') ? 'move' : 'grabbing';
+    ev.preventDefault();
+  }
+  function onMove(ev) {
+    if (!drag) {
+      var m = hit(evPos(ev));
+      cv.style.cursor = m ? (m === 'ball' ? 'grab' : 'ew-resize') : 'default';
+      return;
+    }
+    var p = evPos(ev), dx = p.x - drag.last.x, dy = p.y - drag.last.y;
+    drag.last = p;
+    if (drag.mode === 'orbit') {
+      cam.az -= dx * 0.008;
+      cam.el = clamp(cam.el + dy * 0.006, 0.05, 1.50);
+      draw();
+      ev.preventDefault();
+      return;
+    }
+    if (drag.mode === 'ball') {
+      if (st.allow.t) {
+        st.t = pathTAt(S, p.x, p.y);
+        st.ball = St.pointAt(R.walkPath(st), st.t);
+      } else if (st.allow.line) {
+        st.lineT = pathTAt(S, p.x, p.y);
+        st.ball = St.pointAt(R.walkPath(st), st.lineT);
+      } else {
+        var kb = R.uPerPixel(S, st.ball.x, st.ball.y, P.phiAt(st.ball.x, st.x0, st.E));
+        if (kb) { st.ball.x = clamp(st.ball.x + (dx * kb.dx + dy * kb.dy) / kb.len2, R.U0, R.U1); }
+      }
+    } else if (drag.mode === 'zero') {
+      var kz = R.uPerPixel(S, st.x0, 0, 0);
+      if (kz) { st.x0 = clamp(st.x0 + (dx * kz.dx + dy * kz.dy) / kz.len2, R.X0MIN, R.X0MAX); }
+    } else {
+      var d = S.stripInv(dx, dy);
+      var pt = st[drag.mode];
+      if (pt) {
+        pt.x = clamp(pt.x + d.du, R.U0 + 0.15, R.U1 - 0.15);
+        pt.y = clamp(pt.y + d.dv, R.V0 + 0.1, R.V1 - 0.1);
+        if (drag.mode === 'A' && (st.show.equiLine || st.show.assumed)) { st.walkFrom = pt.x; }
+      }
+    }
+    draw();
+    ev.preventDefault();
+  }
+  function onUp() { if (drag) { drag = null; cv.style.cursor = 'default'; } }
+
+  cv.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
+  cv.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  cv.addEventListener('touchstart', onDown, { passive: false });
+  cv.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onUp);
+
+  cv.addEventListener('wheel', function (ev) {
+    ev.preventDefault();
+    cam.zoom = clamp(cam.zoom * Math.exp(-ev.deltaY * 0.0012), 0.5, 2.6);
+    draw();
+  }, { passive: false });
+  cv.addEventListener('dblclick', function () { setView('reset'); });
+
+  (function () {
+    var btns = document.querySelectorAll('#wrapView button');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function () { setView(this.getAttribute('data-view')); });
+    }
+  })();
+
+  var rzT = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(rzT); rzT = setTimeout(draw, 120);
+  });
+
+  /* ================= 顶部步骤导航条 ================= */
+  var tocEl = $('toc'), tocLinks = [], tocMarked = -1;
+  (function buildToc() {
+    if (!tocEl) { return; }
+    var curAct = null;
+    for (var i = 0; i < St.STEPS.length; i++) {
+      var def = St.STEPS[i];
+      if (def.act !== curAct) {
+        if (curAct !== null) {
+          var sp = document.createElement('span'); sp.className = 'sep'; tocEl.appendChild(sp);
+        }
+        curAct = def.act;
+        var lab = document.createElement('span');
+        lab.className = 'grouplab';
+        lab.textContent = String(def.act).split('·')[0].trim();
+        lab.title = def.act;
+        tocEl.appendChild(lab);
+      }
+      var a = document.createElement('a');
+      a.title = (i + 1) + '. ' + def.title;
+      a.textContent = String(i + 1);
+      (function (idx, node) { node.addEventListener('click', function () { go(idx); }); })(i, a);
+      tocEl.appendChild(a);
+      tocLinks.push(a);
+    }
+  })();
+  function markToc() {
+    if (!tocLinks.length || tocMarked === st.step) { return; }
+    tocMarked = st.step;
+    for (var i = 0; i < tocLinks.length; i++) {
+      var on = (i === st.step);
+      tocLinks[i].className = on ? 'on' : '';
+      if (on && tocLinks[i].scrollIntoView) { tocLinks[i].scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+    }
+  }
+
+  /* ================= 自检 / 调试接口 ================= */
+  function hash() {
+    var f = R.fitCanvas(cv);
+    var W = Math.floor(f.W), H = Math.floor(f.H);
+    var d = f.ctx.getImageData(0, 0, W, H).data;
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < d.length; i += 61) { h ^= d[i]; h = (h * 16777619) >>> 0; }
+    return ('00000000' + h.toString(16)).slice(-8);
+  }
+
+  /**
+   * 本课物理专项验证（在页面里跑，报出用例数与最大误差）
+   *   ① U 与零点无关  ② U_BA = −U_AB  ③ 可加性  ④ 教材例题四问
+   *   ⑤ W = qU = EpA − EpB  ⑥ 沿等势面移动 W = 0  ⑦ 反证法 θ
+   */
+  function verifyU() {
+    var worst = 0, cases = 0, bad = [];
+    function chk(a, b, tag) {
+      cases++;
+      var e = Math.abs(a - b);
+      if (e > worst) { worst = e; }
+      if (e > 1e-9) { bad.push(tag + ' err=' + e); }
+    }
+    var x0s = [-1.7, -0.9, 0, 0.6, 1.7], Es = [60, 80, 100, 120], qs = [2, 1, -1, -2];
+    var ABs = [[-1.4, 1.2], [0.75, 1.75], [-2.4, -2.4], [1.75, -0.75], [0.4, 0.4]];
+    var i, j, k;
+    for (i = 0; i < ABs.length; i++) {
+      for (j = 0; j < Es.length; j++) {
+        var E = Es[j], xa = ABs[i][0], xb = ABs[i][1];
+        var u0 = P.uAB(xa, xb, E);
+        for (k = 0; k < x0s.length; k++) {
+          chk(P.phiAt(xa, x0s[k], E) - P.phiAt(xb, x0s[k], E), u0, '①U 与零点无关');
+        }
+        chk(P.uBA(xa, xb, E), -u0, '②U_BA = −U_AB');
+        for (k = 0; k < qs.length; k++) {
+          var q = P.qOf(qs[k]);
+          chk(P.work(q, xa, xb, E), q * u0, '⑤W = qU');
+          chk(P.epAt(q, xa, x0s[2], E) - P.epAt(q, xb, x0s[2], E), q * u0, '⑤W = EpA − EpB');
+        }
+      }
+      chk(P.uAB(ABs[i][0], ABs[i][1], 80) + P.uAB(ABs[i][1], -0.75, 80),
+        P.uAB(ABs[i][0], -0.75, 80), '③可加性');
+    }
+    /* ④ 教材例题四问 */
+    chk(P.uAB(0.75, 1.75, 80), 80, '④教材 U_AB = +80 V');
+    chk(P.uAB(1.75, -0.75, 80), -200, '④教材 U_BC = −200 V');
+    chk(P.uAB(0.75, -0.75, 80), -120, '④教材 U_AC = −120 V');
+    chk(P.work(P.qOf(2), 0.75, 1.75, 80), 1.6e-7, '④教材 W_AB = +1.6×10⁻⁷ J');
+    chk(P.work(P.qOf(-1.5), 0.75, -0.75, 80), 1.8e-7, '④教材第三刀 W_AC = +1.8×10⁻⁷ J');
+
+    /* ⑥ 沿等势面移动（Δu = 0）：任意分段数、任意 q */
+    var Ns = [1, 2, 3, 8, 32];
+    for (i = 0; i < Ns.length; i++) {
+      var line = [{ x: 0.75, y: -1.2 }];
+      for (k = 0; k <= Ns[i]; k++) { line.push({ x: 0.75, y: -1.2 + 2.4 * k / Ns[i] }); }
+      for (j = 0; j < qs.length; j++) {
+        chk(P.accumulate(line, P.qOf(qs[j]), 80).W, 0, '⑥沿等势面 W = 0 (N=' + Ns[i] + ')');
+      }
+    }
+    /* ⑦ 反证法 */
+    var ths = [5, 10, 20, 40], halfs = [0.2, 0.6, 1.0];
+    for (i = 0; i < ths.length; i++) {
+      for (j = 0; j < halfs.length; j++) {
+        var th = ths[i] * Math.PI / 180;
+        var seg = P.assumedLine({ x: 0.75, y: 0 }, th, halfs[j]);
+        chk(P.accumulate(seg, P.qOf(1), 80).W, P.workOnAssumed(P.qOf(1), 80, th, 2 * halfs[j]),
+          '⑦沿假设面做功 θ=' + ths[i] + '°');
+        cases++;
+        if (Math.abs(P.workOnAssumed(P.qOf(1), 80, th, 2 * halfs[j])) <= 1e-20) { bad.push('⑦θ≠0 却算出不做功'); }
+      }
+    }
+    chk(P.accumulate(P.assumedLine({ x: 0.75, y: 0 }, 0, 1.0), P.qOf(1), 80).W, 0, '⑦θ=0 时 W = 0');
+    return { ok: bad.length === 0, cases: cases, maxErr: worst, failed: bad.slice(0, 3) };
+  }
+
+  window.__viz = {
+    state: st,
+    cam: cam,
+    setView: setView,
+    count: St.STEPS.length,
+    go: go, next: next, prev: prev, reset: resetStep, draw: draw,
+    hash: hash,
+    render: R, phys: P, steps: St,
+    verifyU: verifyU,
+    selfTest: function () { return P.runSelfTest(); },
+    stepMeta: function () {
+      return St.STEPS.map(function (d, i) {
+        return { i: i, act: d.act, title: d.title, allow: Object.keys(d.allow || {}), hint: d.hint || '' };
+      });
+    }
+  };
+
+  /* ================= 启动 ================= */
+  St.apply(st, 0);
+  draw();
+  setTimeout(draw, 60);
+})();
+
+</script>
+</body>
+</html>
